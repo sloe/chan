@@ -75,7 +75,7 @@ class SloeYouTubeTree:
           video_id = playlist_item["snippet"]["resourceId"]["videoId"]
 
           video_spec = playlist_item["snippet"]
-          video_spec[u"sloemodified"] = True # Should be False
+          video_spec[u"sloemodified"] = False
           video_ids.append(video_id)
           video_specs.append(video_spec)
 
@@ -91,6 +91,8 @@ class SloeYouTubeTree:
 
         for i, video_id in enumerate(video_ids):
           self.item_list[video_id] = SloeYouTubeItem(video_specs[i])
+          self.item_list[video_id].update_video_description("Sloecoach test video")
+          self.item_list[video_id].set_sloeid_tag("01234567890")
 
         playlistitems_list_request = self.session().playlistItems().list_next(
           playlistitems_list_request, playlistitems_list_response)
@@ -98,10 +100,24 @@ class SloeYouTubeTree:
     if updated:
       self._save_cache()
 
+
   def write(self):
     for item_id, item in self.item_list.iteritems():
       if item.get("sloemodified"):
-        print "Item %s is modified" % item_id
+        logging.info("Item %s is modified - updating" % item_id)
+        self.update_item(item)
+
+
+  def update_item(self, item):
+    sloevideo = item.get("sloevideo")
+    videos_update_request = self.session().videos().update(
+      part="snippet",
+      body={
+        "id":sloevideo["id"],
+        "snippet":sloevideo["snippet"]
+      })
+    videos_update_request.execute()
+
 
   def __repr__(self):
     return pprint.pformat(self.item_list)

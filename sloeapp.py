@@ -18,9 +18,9 @@ class SloeApp:
     parser.add_option("-z", "--dryrun",
                   action="store_true", dest="dryrun", default=False,
                   help="perform functions but do not write files")
-    parser.add_option("--final",
-                  action="store_true", dest="final", default=False,
-                  help="generate_cfg for final directory")
+    parser.add_option("--reset-sloeid",
+                  action="store_true", dest="resetsloeid", default=False,
+                  help="Reset sloeid values in tags")
     (self.options, self.args) = parser.parse_args()
     self.params = self.args[1:]
     logging.basicConfig(format="#%(levelname)s:%(filename)s::%(funcName)s#%(lineno)d at %(asctime)s\n%(message)s")
@@ -45,7 +45,7 @@ class SloeApp:
     if len(self.args) == 0:
       parser.error("Please supply a command argument")
     else:
-      valid_commands = ("auth", )
+      valid_commands = ("auth", "dumptree", "sync")
       command = self.args[0]
       if command not in valid_commands:
         parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
@@ -59,6 +59,18 @@ class SloeApp:
     session_r.get_session()
     session_w = sloeyoutube.SloeYouTubeSession("w")
     session_w.get_session()
+
+  def dumptree(self):
+    session_r = sloeyoutube.SloeYouTubeSession("r")
+    tree = sloeyoutube.SloeYouTubeTree(session_r)
+    tree.read()
+    print tree
+
+  def sync(self):
+    session_w = sloeyoutube.SloeYouTubeSession("w")
+    tree = sloeyoutube.SloeYouTubeTree(session_w)
+    tree.read()
+    tree.write()
 
 if __name__ == "__main__":
   SloeApp().enter()
