@@ -26,13 +26,13 @@ class SloeYouTubeSession:
     elif access == "r":
       self.scope = "https://www.googleapis.com/auth/youtube.readonly"
     else:
-      raise sloelib.SloeException("access must be r or rw")
+      raise sloelib.SloeError("access must be r or w")
 
-  def get_session(self):
+  def __call__(self):
     if self.youtube is None:
       self._open_session()
 
-    return self.flow
+    return self.youtube
 
   def _open_session(self):
     self.flow = flow_from_clientsecrets(self.secrets_file,
