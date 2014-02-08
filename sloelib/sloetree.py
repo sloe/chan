@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from pprint import pformat, pprint
+import string
 import uuid
 
 from sloealbum import SloeAlbum
@@ -66,7 +67,8 @@ class SloeTree:
                         if match:
                             name = match.group(1)
                             filename_uuid = match.group(2)
-                            bytecount += self.add_from_ini(primacy, worth, subdir_path, os.path.relpath(root, subdir_path), filename, name, filename_uuid)
+                            subtree = string.replace(os.path.relpath(root, subdir_path), "\\", "/")
+                            bytecount += self.add_from_ini(primacy, worth, subdir_path, subtree, filename, name, filename_uuid)
                             filecount += 1
                         elif self.ini_regex.match(filename):
                             logging.warning("Suspicious misnamed(?) .ini file %s" % os.path.join(root, filename))

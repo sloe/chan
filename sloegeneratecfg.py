@@ -4,6 +4,7 @@ import logging
 import os
 from pprint import pprint, pformat
 import re
+import string
 import subprocess
 
 import sloelib
@@ -36,7 +37,7 @@ class SloeGenerateCfg:
               "name" : match.group(1),
               "primacy" : primacy,
               "tree" : tree_name,
-              "subtree" : os.path.relpath(root, walkroot),
+              "subtree" : string.replace(os.path.relpath(root, walkroot), "\\", "/"),
               "worth" : worth
             }
             self.process_file(spec)
