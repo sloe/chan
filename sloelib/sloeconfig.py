@@ -75,3 +75,12 @@ class SloeConfig:
     self.remake_data()
     message += pformat(self.data)
     return message
+
+
+  def get_tree_key(self, tree_name):
+    return "tree_" + tree_name
+
+
+  def get_tree_root_dir(self, tree_name):
+    root_dir = self.get(self.get_tree_key(tree_name), "root_dir")
+    return root_dir

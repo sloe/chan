@@ -6,6 +6,9 @@ import sys
 import sloelib
 import sloeyoutube
 
+
+from sloegeneratecfg import SloeGenerateCfg
+
 class SloeApp:
 
   def get_global(self, name):
@@ -18,6 +21,9 @@ class SloeApp:
     parser.add_option("-z", "--dryrun",
                   action="store_true", dest="dryrun", default=False,
                   help="perform functions but do not write files")
+    parser.add_option("--final",
+                  action="store_true", dest="final", default=False,
+                  help="generate_cfg for final directory")
     parser.add_option("--reset-sloeid",
                   action="store_true", dest="resetsloeid", default=False,
                   help="Reset sloeid values in tags")
@@ -45,13 +51,13 @@ class SloeApp:
     if len(self.args) == 0:
       parser.error("Please supply a command argument")
     else:
-      valid_commands = ("auth", "dumptree", "sync")
+      valid_commands = ("auth", "dumptree", "generatecfg", "sync", "verifytree")
       command = self.args[0]
       if command not in valid_commands:
         parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
 
       logging.info("Command: %s" % " ".join(self.args))
-      getattr(self, command)()
+      getattr(self, command)(*self.args[1:])
 
 
   def auth(self):
@@ -66,11 +72,23 @@ class SloeApp:
     tree.read()
     print tree
 
+
+  def generatecfg(self, *params):
+    handler = SloeGenerateCfg(self)
+    handler.enter(params)
+
+
   def sync(self):
     session_w = sloeyoutube.SloeYouTubeSession("w")
     tree = sloeyoutube.SloeYouTubeTree(session_w)
     tree.read()
     tree.write()
+
+
+  def verifytree(self, *trees):
+    for tree_name in trees:
+      logging.debug("Verifying tree %s" % tree_name)
+      tree = sloelib.SloeTrees.inst().get_tree(tree_name)
 
 if __name__ == "__main__":
   SloeApp().enter()
