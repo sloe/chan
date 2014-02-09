@@ -39,10 +39,14 @@ FileName=$[Project-Path]sloelib\sloetree.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes\Node6]
 ClassName=TProjectFileNode
+FileName=$[Project-Path]sloelib\sloetreenode.py
+
+[Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes\Node7]
+ClassName=TProjectFileNode
 FileName=$[Project-Path]sloelib\sloetrees.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes]
-Count=7
+Count=8
 
 [Project\ChildNodes\Node0\ChildNodes\Node1]
 ClassName=TProjectFolderNode

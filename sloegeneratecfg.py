@@ -25,10 +25,21 @@ class SloeGenerateCfg:
     else:
       primacy = "primary"
 
-    for worth, walkroot in sloelib.SloeTrees.inst().get_treepaths(primacy,  tree_name).iteritems():
+    for worth, walkroot in sloelib.SloeTrees.inst().get_treepaths(primacy, tree_name).iteritems():
       logging.debug("generate_cfg walking tree directory %s" % walkroot)
 
-      for root, dirs, files in os.walk(walkroot):
+      for root, dirs, files in os.walk(walkroot, topdown=True, followlinks=False):
+        for _dir in dirs:
+          spec = {
+            "leafname" : _dir,
+            "name" : _dir,
+            "primacy" : primacy,
+            "tree" : tree_name,
+            "subtree" : string.replace(os.path.relpath(root, walkroot), "\\", "/"),
+            "worth" : worth
+          }
+          self.process_dir(spec)
+
         for file in files:
           match = re.match(r"^(.*)\.(flv|mp4|f4v)$", file)
           if match:
@@ -41,6 +52,17 @@ class SloeGenerateCfg:
               "worth" : worth
             }
             self.process_file(spec)
+
+
+  def process_dir(self, spec):
+    logging.debug("Processing directory with spec %s" % repr(spec))
+
+    current_tree = sloelib.SloeTrees.inst().get_tree(spec["tree"])
+    existing_album = current_tree.get_album_from_spec(spec)
+    item = sloelib.SloeAlbum()
+    item.create_new(existing_album, spec)
+    if not self.glb_cfg.get_option("dryrun"):
+      album.savetofile()
 
 
   def process_file(self, spec):

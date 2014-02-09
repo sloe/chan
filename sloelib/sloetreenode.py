@@ -1,27 +1,94 @@
 
+import ConfigParser
+import logging
+import os
+import sys
+from pprint import pprint, pformat
+
+from sloeerror import SloeError
+
 class SloeTreeNode(object):
-    def __init__(self, type):
-        self._d = {
-            "type": type
-        }
+  MANDATORY_ELEMENTS = []
 
-    def get(self, name, default):
-        node = object.__getattribute__(self, "_d")
-        if name in node:
-            return node[name]
+  def __init__(self, type):
+    self._type = type
+    self._d =  {
+      "type": type
+    }
+
+
+  def get(self, name, default):
+    node = object.__getattribute__(self, "_d")
+    if name in node:
+      return node[name]
+    else:
+      return default
+
+
+  def set_value(self, name, value):
+    self._d[name] = value
+
+
+  def __getattr__(self, name):
+    node = object.__getattribute__(self, "_d")
+    if name in node:
+      return node[name]
+    else:
+      raise AttributeError(name)
+
+
+  def create_from_ini_file(self, ini_filepath, error_info):
+    with open(ini_filepath, "rb") as ini_fp:
+      self.create_from_ini_fp(ini_fp, error_info)
+
+
+  def create_from_ini_fp(self, ini_fp, error_info):
+    self._d =  {
+      "type": type
+    }
+    parser = ConfigParser.RawConfigParser()
+    parser.readfp(ini_fp)
+    file_data = {}
+    for section in parser.sections():
+      file_data[section] = {}
+      for item_name, value in parser.items(section):
+        if value.startswith('"') and value.endswith('"'):
+            value = value[1:-1]
+        file_data[section][item_name] = value
+    _d = {}
+    override = {}
+    in_file_uuid = None
+    try:
+      for section, v in file_data.iteritems():
+        if "uuid" in v:
+          if in_file_uuid is not None:
+            raise SloeError("Multiple uuid elements present")
+          in_file_uuid = v["uuid"]
+      section_with_uuid = "%s-%s" % (self._type, in_file_uuid or "NONE")
+
+      for section, v in file_data.iteritems():
+        if section == "override":
+          override = v
+        elif section == "auto" or section == self._type or section == section_with_uuid:
+          _d.update(v)
+        elif section.startswith(self._type):
+          raise SloeError("in-file section/uuid mismatch %s != %s" %
+            (section, section_with_uuid))
         else:
-            return default
+          raise SloeError("illegal section name %s" %
+            section)
+      _d.update(override)
+      self.verify_file_data(_d)
+    except SloeError, e:
+      raise SloeError("%s (%s)" % (str(e), error_info))
+    self._d.update(_d)
 
 
-    def set_value(self, name, value):
-        self._d[name] = value
+  def verify_file_data(self, file_data):
+    missing_elements = []
+    for element in self.MANDATORY_ELEMENTS:
+      if element not in file_data:
+        missing_elements.append(element)
 
-
-    def __getattr__(self, name):
-        node = object.__getattribute__(self, "_d")
-        if name in node:
-            return node[name]
-        else:
-            raise AttributeError(name)
-
-
+    if len(missing_elements) > 0:
+      raise SloeError("Missing elements %s in .ini file" % ", ".join(missing_elements))

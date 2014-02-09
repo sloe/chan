@@ -2,6 +2,7 @@
 import logging
 import optparse
 import os
+from pprint import pprint
 import sys
 import sloelib
 import sloeyoutube
@@ -18,9 +19,12 @@ class SloeApp:
 
   def enter(self):
     parser = optparse.OptionParser("usage: %prog [options] command")
-    parser.add_option("-z", "--dryrun",
+    parser.add_option("--dryrun",
                   action="store_true", dest="dryrun", default=False,
                   help="perform functions but do not write files")
+    parser.add_option("--dump",
+                  action="store_true", dest="dump", default=False,
+                  help="dump output after processing")
     parser.add_option("--final",
                   action="store_true", dest="final", default=False,
                   help="generate_cfg for final directory")
@@ -66,6 +70,7 @@ class SloeApp:
     session_w = sloeyoutube.SloeYouTubeSession("w")
     session_w.get_session()
 
+
   def dumptree(self):
     session_r = sloeyoutube.SloeYouTubeSession("r")
     tree = sloeyoutube.SloeYouTubeTree(session_r)
@@ -86,9 +91,12 @@ class SloeApp:
 
 
   def verifytree(self, *trees):
+    glb_cfg = sloelib.SloeConfig.get_global()
     for tree_name in trees:
       logging.debug("Verifying tree %s" % tree_name)
       tree = sloelib.SloeTrees.inst().get_tree(tree_name)
+      if (glb_cfg.get_option("dump")):
+        pprint(tree)
 
 if __name__ == "__main__":
   SloeApp().enter()
