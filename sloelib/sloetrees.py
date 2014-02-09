@@ -43,7 +43,7 @@ class SloeTrees:
 
 
   def _create_tree(self, tree_name):
-    logging.debug("Loading tree %s" % tree_name)
+    logging.debug("Creating tree object for %s" % tree_name)
 
     glb_cfg = SloeConfig.get_global()
     tree_spec = glb_cfg.get_section(glb_cfg.get_tree_key(tree_name))

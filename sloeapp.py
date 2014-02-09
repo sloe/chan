@@ -93,7 +93,7 @@ class SloeApp:
   def verifytree(self, *trees):
     glb_cfg = sloelib.SloeConfig.get_global()
     for tree_name in trees:
-      logging.debug("Verifying tree %s" % tree_name)
+      logging.debug("Beginning tree verification for %s" % tree_name)
       tree = sloelib.SloeTrees.inst().get_tree(tree_name)
       if (glb_cfg.get_option("dump")):
         pprint(tree)

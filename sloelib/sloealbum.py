@@ -13,6 +13,7 @@ class SloeAlbum(SloeTreeNode):
     SloeTreeNode.__init__(self, "album")
     self._albums = {}
     self._items = {}
+    self._album_names_to_uuids = {}
 
 
   @classmethod
@@ -22,15 +23,35 @@ class SloeAlbum(SloeTreeNode):
     return album
 
 
-  def get_album(self, name):
-    album = self._albums.get(name, None)
+  def get_ini_leafname(self):
+    return "+" + SloeTreeNode.get_ini_leafname(self)
+
+
+  def create_new(self, name, full_path):
+    self._d.update({
+      "name" : name,
+      "_save_dir" : full_path,
+      "title" : "<Untitled>",
+      "uuid" : uuid.uuid4()
+    })
+
+
+  def get_child_album_by_name(self, name):
+    uuid = self._album_names_to_uuids.get(name, None)
+    if uuid is None:
+      raise SloeError("Missing album '%s'" % name)
+    return get_child_album(uuid)
+
+
+  def get_child_album(self, uuid):
+    album = self._albums.get(uuid, None)
     if album is None:
       raise SloeError("Missing album '%s'" % name)
     return album
 
 
-  def get_album_or_none(self, name):
-    return self._albums.get(name, None)
+  def get_child_album_or_none(self, uuid):
+    return self._albums.get(uuid, None)
 
 
   def get_albums(self):
@@ -41,17 +62,16 @@ class SloeAlbum(SloeTreeNode):
     return self._items.values()
 
 
-  def add_album(self, album):
-    self._albums[album.name] = album
+  def add_child_album(self, album):
+    album.set_value("parent_album", self.uuid)
+    self._albums[album.uuid] = album
+    self._album_names_to_uuids[album.name] = album.uuid
+    return album
 
 
-  def add_item(self, item):
+  def add_child_item(self, item):
     self._items[item.uuid] = item
-
-
-  def create_album(self, path, name):
-    pass
-
+    item.set_value("parent_album", self._d["uuid"])
 
 
   def __repr__(self):

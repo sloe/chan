@@ -1,4 +1,5 @@
 
+import glob
 import json
 import logging
 import os
@@ -14,6 +15,7 @@ class SloeGenerateCfg:
     self.app = app
     self.glb_cfg = sloelib.SloeConfig.get_global()
 
+
   def enter(self, tree_names):
     for tree_name in tree_names:
       self.process_tree(tree_name)
@@ -28,18 +30,15 @@ class SloeGenerateCfg:
     for worth, walkroot in sloelib.SloeTrees.inst().get_treepaths(primacy, tree_name).iteritems():
       logging.debug("generate_cfg walking tree directory %s" % walkroot)
 
+      if not os.path.exists(walkroot):
+        os.makedirs(walkroot)
+      self.process_dir(os.path.basename(walkroot), walkroot)
+
       for root, dirs, files in os.walk(walkroot, topdown=True, followlinks=False):
         for _dir in dirs:
-          spec = {
-            "leafname" : _dir,
-            "name" : _dir,
-            "primacy" : primacy,
-            "tree" : tree_name,
-            "subtree" : string.replace(os.path.relpath(root, walkroot), "\\", "/"),
-            "worth" : worth
-          }
-          self.process_dir(spec)
+          self.process_dir(os.path.basename(_dir), os.path.join(root, _dir))
 
+      for root, dirs, files in os.walk(walkroot, topdown=True, followlinks=False):
         for file in files:
           match = re.match(r"^(.*)\.(flv|mp4|f4v)$", file)
           if match:
@@ -54,15 +53,15 @@ class SloeGenerateCfg:
             self.process_file(spec)
 
 
-  def process_dir(self, spec):
-    logging.debug("Processing directory with spec %s" % repr(spec))
-
-    current_tree = sloelib.SloeTrees.inst().get_tree(spec["tree"])
-    existing_album = current_tree.get_album_from_spec(spec)
-    item = sloelib.SloeAlbum()
-    item.create_new(existing_album, spec)
-    if not self.glb_cfg.get_option("dryrun"):
-      album.savetofile()
+  def process_dir(self, name, full_path):
+    logging.debug("Processing directory %s" % full_path)
+    album_files = glob.glob(os.path.join(full_path, "*ALBUM=*.ini"))
+    if album_files == []:
+      logging.debug("Creating template album file in %s" % full_path)
+      album = sloelib.SloeAlbum()
+      album.create_new(name, full_path)
+      if not self.glb_cfg.get_option("dryrun"):
+        album.save_to_file()
 
 
   def process_file(self, spec):
@@ -74,7 +73,7 @@ class SloeGenerateCfg:
     item.create_new(existing_item, spec)
     self.detect_video_params(item)
     if not self.glb_cfg.get_option("dryrun"):
-      item.savetofile()
+      item.save_to_file()
 
 
   def detect_video_params(self, item):

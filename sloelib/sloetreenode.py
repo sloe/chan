@@ -25,6 +25,10 @@ class SloeTreeNode(object):
       return default
 
 
+  def get_key(self):
+      return "%s-%s" % (self._d["type"], str(self._d["uuid"]))
+
+
   def set_value(self, name, value):
     self._d[name] = value
 
@@ -81,6 +85,7 @@ class SloeTreeNode(object):
       self.verify_file_data(_d)
     except SloeError, e:
       raise SloeError("%s (%s)" % (str(e), error_info))
+
     self._d.update(_d)
 
 
@@ -92,3 +97,23 @@ class SloeTreeNode(object):
 
     if len(missing_elements) > 0:
       raise SloeError("Missing elements %s in .ini file" % ", ".join(missing_elements))
+
+
+  def get_ini_leafname(self):
+    return "%s-%s=%s.ini" % (self._d["name"], self._d["type"].upper(), self._d["uuid"])
+
+
+  def get_ini_filepath(self):
+    return os.path.join(self._d["_save_dir"], self.get_ini_leafname());
+
+
+  def save_to_file(self):
+    parser = ConfigParser.ConfigParser()
+    section = self.get_key()
+    parser.add_section(section)
+    for name, value in self._d.iteritems():
+      if not name.startswith("_"):
+        parser.set(section, name, '"%s"' % str(value))
+
+    with open(self.get_ini_filepath(), "wb") as file:
+      parser.write(file)

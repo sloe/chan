@@ -87,29 +87,9 @@ class SloeItem(SloeTreeNode):
   def get_filepath(self):
       return os.path.join(self.get_file_dir(), self._d["leafname"])
 
-
-  def get_key(self):
-      return "item-%s" % str(self._d["uuid"])
-
-
-  def get_ini_leafname(self):
-      return "%s-%s.ini" % (self._d["name"], self._d["uuid"])
-
-
   def get_ini_filepath(self):
-      treepath = os.path.dirname(self.get_filepath())
-      return os.path.join(treepath, self.get_ini_leafname());
-
-
-  def savetofile(self):
-      parser = ConfigParser.ConfigParser()
-      section = self.get_key()
-      parser.add_section(section)
-      for name, value in self._d.iteritems():
-          parser.set(section, name, '"%s"' % str(value))
-
-      with open(self.get_ini_filepath(), "wb") as file:
-          parser.write(file)
+    treepath = os.path.dirname(self.get_filepath())
+    return os.path.join(treepath, self.get_ini_leafname());
 
 
   def dump(self):
