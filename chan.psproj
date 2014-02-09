@@ -31,26 +31,30 @@ FileName=$[Project-Path]sloelib\sloeerror.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes\Node4]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]sloelib\sloeitem.py
+FileName=$[Project-Path]sloelib\sloegenspec.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes\Node5]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]sloelib\sloetree.py
+FileName=$[Project-Path]sloelib\sloeitem.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes\Node6]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]sloelib\sloetreenode.py
+FileName=$[Project-Path]sloelib\sloetree.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes\Node7]
 ClassName=TProjectFileNode
-FileName=$[Project-Path]sloelib\sloetrees.py
+FileName=$[Project-Path]sloelib\sloetreenode.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes\Node8]
+ClassName=TProjectFileNode
+FileName=$[Project-Path]sloelib\sloetrees.py
+
+[Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes\Node9]
 ClassName=TProjectFileNode
 FileName=$[Project-Path]sloelib\sloetreeutil.py
 
 [Project\ChildNodes\Node0\ChildNodes\Node0\ChildNodes]
-Count=9
+Count=10
 
 [Project\ChildNodes\Node0\ChildNodes\Node1]
 ClassName=TProjectFolderNode

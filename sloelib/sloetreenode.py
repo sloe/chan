@@ -10,10 +10,10 @@ from sloeerror import SloeError
 class SloeTreeNode(object):
   MANDATORY_ELEMENTS = []
 
-  def __init__(self, type):
-    self._type = type
+  def __init__(self, _type):
+    self._type = _type
     self._d =  {
-      "type": type
+      "type": _type
     }
 
 
@@ -49,7 +49,7 @@ class SloeTreeNode(object):
 
   def create_from_ini_fp(self, ini_fp, error_info):
     self._d =  {
-      "type": type
+      "type": self._type
     }
     parser = ConfigParser.RawConfigParser()
     parser.readfp(ini_fp)

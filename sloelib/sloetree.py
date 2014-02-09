@@ -9,10 +9,12 @@ import uuid
 from sloealbum import SloeAlbum
 from sloeconfig import SloeConfig
 from sloeerror import SloeError
+from sloegenspec import SloeGenSpec
 from sloeitem import SloeItem
 
 class SloeTree:
   album_ini_regex = re.compile(r"(.*)-ALBUM=([0-9A-Fa-f-]{36}).ini$")
+  genspec_ini_regex = re.compile(r"(.*)-GENSPEC=([0-9A-Fa-f-]{36})\.ini$")
   item_ini_regex = re.compile(r"(.*)-ITEM=([0-9A-Fa-f-]{36})\.ini$")
   ini_regex = re.compile(r".*\.ini$")
 
@@ -118,6 +120,13 @@ class SloeTree:
       if not album_found:
         raise SloeError("Missing ALBUM= .ini files in %s" % full_path)
 
+      for filename in filenames:
+        match = self.genspec_ini_regex.match(filename)
+        if match:
+          name = match.group(1)
+          filename_uuid = match.group(2)
+          self.add_genspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, parent_album)
+
       parent_album = album_found
     return album_found
 
@@ -158,9 +167,14 @@ class SloeTree:
     else:
       logging.warning("Missing file %s" % target_path)
 
-    id_uuid = uuid.UUID(item.uuid)
     dest_album.add_child_item(item)
     return filesize
+
+
+  def add_genspec_from_ini(self, full_path, name, filename_uuid, dest_album):
+    item = SloeGenSpec.new_from_ini_file(full_path, "SloeTree.add_genspec_from_ini: " + full_path)
+    dest_album.add_child_genspec(item)
+
 
   def __repr__(self):
       return ("SloeTree.spec=" + pformat(self.spec) +
