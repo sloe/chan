@@ -1,6 +1,7 @@
 
 import logging
 from pprint import pprint, pformat
+import re
 import uuid
 
 from sloeconfig import SloeConfig
@@ -28,10 +29,42 @@ class SloeAlbum(SloeTreeNode):
 
 
   def create_new(self, name, full_path):
+    title = ""
+    match = re.match(r'mays([0-9]{4})$', name)
+    if match:
+      title = "Cambridge May Bumps %s" % match.group(1)
+
+    match = re.match(r'hoc([0-9]{4})$', name)
+    if match:
+      title = "Head of the Cam %s" % match.group(1)
+
+    match = re.match(r'div(.*)$', name)
+    if match:
+      title = "Division %s" % match.group(1).upper()
+
+    day_map = {
+      "mon" : "Monday",
+      "tues" : "Tuesday",
+      "wed" : "Wednesday",
+      "thurs" : "Thursday",
+      "fri" : "Friday",
+      "sat" : "Saturday",
+      "sun" : "Sunday"
+    }
+
+    if name in day_map.keys():
+      title = day_map[name]
+
+    match = re.match(r'div(.*)$', name)
+    if match:
+      title = "%s" % match.group(1).upper()
+
+
+
     self._d.update({
       "name" : name,
       "_save_dir" : full_path,
-      "title" : "<Untitled>",
+      "title" : title,
       "uuid" : uuid.uuid4()
     })
 

@@ -7,7 +7,6 @@ import sys
 import sloelib
 import sloeyoutube
 
-
 from sloegeneratecfg import SloeGenerateCfg
 
 class SloeApp:
@@ -30,7 +29,10 @@ class SloeApp:
                   help="generate_cfg for final directory")
     parser.add_option("--reset-sloeid",
                   action="store_true", dest="resetsloeid", default=False,
-                  help="Reset sloeid values in tags")
+                  help="reset sloeid values in Youtube tags")
+    parser.add_option("-v", "--verbose",
+                  action="store_true", dest="verbose", default=False,
+                  help="verbose output")
     (self.options, self.args) = parser.parse_args()
     self.params = self.args[1:]
     logging.basicConfig(format="#%(levelname)s:%(filename)s::%(funcName)s#%(lineno)d at %(asctime)s\n%(message)s")
@@ -55,7 +57,7 @@ class SloeApp:
     if len(self.args) == 0:
       parser.error("Please supply a command argument")
     else:
-      valid_commands = ("auth", "dumptree", "generatecfg", "sync", "verifytree")
+      valid_commands = ("auth", "dumptree", "generatecfg", "lstree", "sync", "verifytree")
       command = self.args[0]
       if command not in valid_commands:
         parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
@@ -81,6 +83,14 @@ class SloeApp:
   def generatecfg(self, *params):
     handler = SloeGenerateCfg(self)
     handler.enter(params)
+
+
+  def lstree(self, *trees):
+    glb_cfg = sloelib.SloeConfig.get_global()
+    for tree_name in trees:
+      tree = sloelib.SloeTrees.inst().get_tree(tree_name)
+      treeutil = sloelib.SloeTreeUtil(tree)
+      treeutil.print_ls()
 
 
   def sync(self):

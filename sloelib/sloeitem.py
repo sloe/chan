@@ -33,11 +33,6 @@ class SloeItem(SloeTreeNode):
           self._d[element] = spec[element]
 
 
-  def create_from_ini_file(self, ini_filepath, error_info):
-      with open(ini_filepath, "rb") as ini_fp:
-          self._create_from_ini_fp(ini_fp, error_info)
-
-
   @classmethod
   def new_from_ini_file(cls, ini_filepath, error_info):
       item = SloeItem()

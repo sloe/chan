@@ -44,6 +44,7 @@ class SloeTreeNode(object):
   def create_from_ini_file(self, ini_filepath, error_info):
     with open(ini_filepath, "rb") as ini_fp:
       self.create_from_ini_fp(ini_fp, error_info)
+      self._d["_location"] = os.path.dirname(ini_filepath)
 
 
   def create_from_ini_fp(self, ini_fp, error_info):

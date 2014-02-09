@@ -20,8 +20,14 @@ class SloeTree:
       self.spec = spec
       self.loaded = False
       self.treedata = SloeAlbum()
+      self.treedata.set_value("_location", "root")
       self.treedata.set_value("name", "root")
+      self.treedata.set_value("title", "")
       self.treedata.set_value("uuid", "1a26ed39-1ea6-487d-8c3a-dfbc71d8df4a")
+
+
+  def get_root_album(self):
+    return self.treedata
 
 
   def get_tree_uuid(self):
