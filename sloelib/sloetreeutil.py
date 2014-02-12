@@ -28,10 +28,15 @@ class SloeTreeUtil(object):
         if self.verbose:
           pprint(item._d)
 
-      for genspec in album.get_genspecs():
-        print "%s%sGenspec: %s" % (genspec.uuid, indent, genspec.name)
+      for obj in album.get_genspecs():
+        print "%s%sGenSpec: %s" % (obj.uuid, indent, obj.name)
         if self.verbose:
-          pprint(genspec._d)
+          pprint(obj._d)
+      
+      for obj in album.get_outputspecs():
+        print "%s%sOutputSpec: %s" % (obj.uuid, indent, obj.name)
+        if self.verbose:
+          pprint(obj._d)
 
     except Exception, e:
       logging.error("Missing attribute for %s" % album.name)

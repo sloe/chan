@@ -1,0 +1,26 @@
+#!wing
+#!version=5.0
+##################################################################
+# Wing IDE project file                                          #
+##################################################################
+[project attributes]
+proj.directory-list = [{'dirloc': loc('.'),
+                        'excludes': [u'oauth_storage.json',
+                                     u'test.py-oauth2.json',
+                                     u'chan.psproj',
+                                     u'lstree.txt',
+                                     u'.gitignore',
+                                     u'youtubetree_idmap_cache.pickle',
+                                     u'youtubetree_idmap_cache.valid',
+                                     u'oauth_storage_r.json',
+                                     u'verbose_lstree.txt',
+                                     u'client_secrets.json',
+                                     u'oauth_storage_w.json'],
+                        'filter': '*',
+                        'include_hidden': False,
+                        'recursive': True,
+                        'watch_for_changes': True}]
+proj.file-list = [loc('sloeapp.py'),
+                  loc('sloegeneratecfg.py')]
+proj.file-type = 'shared'
+proj.main-file = loc('sloeapp.py')
