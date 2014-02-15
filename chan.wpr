@@ -6,6 +6,7 @@
 [project attributes]
 proj.directory-list = [{'dirloc': loc('.'),
                         'excludes': [u'sloelib/sloejobmanager.py',
+                                     u'sloelib/sloerenderjob.py',
                                      u'oauth_storage.json',
                                      u'test.py-oauth2.json',
                                      u'chan.psproj',
@@ -22,9 +23,10 @@ proj.directory-list = [{'dirloc': loc('.'),
                         'recursive': True,
                         'watch_for_changes': True}]
 proj.file-list = [loc('sloeapp.py'),
-                  loc('sloegeneratecfg.py')]
+                  loc('sloegeneratecfg.py'),
+                  loc('sloelib/sloerenderjob.py')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('sloeapp.py'): ('project',
-        (u'lswork mays2013 -v\n',
+        (u'dowork mays2013 \n',
          ''))}
 proj.main-file = loc('sloeapp.py')
