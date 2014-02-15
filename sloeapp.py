@@ -57,7 +57,7 @@ class SloeApp:
     if len(self.args) == 0:
       parser.error("Please supply a command argument")
     else:
-      valid_commands = ("auth", "dumptree", "generatecfg", "lstree", "lsoutput", "sync", "verifytree")
+      valid_commands = ("auth", "dumptree", "generatecfg", "lstree", "lsoutput", "lswork", "sync", "verifytree")
       command = self.args[0]
       if command not in valid_commands:
         parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
@@ -100,7 +100,17 @@ class SloeApp:
       outpututil = sloelib.SloeOutputUtil(tree)
       outputdefs = outpututil.derive_outputdefs()
       pprint(outputdefs)
-
+      
+      
+  def lswork(self, *trees):
+    glb_cfg = sloelib.SloeConfig.get_global()
+    for tree_name in trees:
+      tree = sloelib.SloeTrees.inst().get_tree(tree_name)
+      work_manager = sloelib.SloeWorkManager(tree)
+      work = work_manager.get_all_work(tree)
+      pprint(work)
+      
+      
   def sync(self):
     session_w = sloeyoutube.SloeYouTubeSession("w")
     tree = sloeyoutube.SloeYouTubeTree(session_w)

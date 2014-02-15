@@ -17,11 +17,11 @@ class SloeOutputUtil(object):
 
 
   def _derive_outputdefs_recurse(self, indent, album):
-    print "%s%sAlbum: %s '%s' (%s)" % (album.uuid, indent, album.name, album.title, album._location.replace("\\", "/"))
+    print "%sAlbum: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/"))
     for outputspec in album.get_outputspecs():
       pprint(outputspec)
 
-    for album in album.get_albums():
+    for album in album.subalbums:
       self._derive_outputdefs_recurse(indent+" ", album)
 
 

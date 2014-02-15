@@ -43,7 +43,7 @@ class SloeTree:
           for item in album.get_items():
               if test_fn(item):
                   return item
-          for album in album.get_albums():
+          for album in album.subalbums:
               found = recurse(album, found)
               if found:
                   break

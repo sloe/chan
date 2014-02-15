@@ -9,127 +9,129 @@ from sloeerror import SloeError
 from sloetreenode import SloeTreeNode
 
 class SloeAlbum(SloeTreeNode):
-  MANDATORY_ELEMENTS = ("name", "uuid")
-  def __init__(self):
-    SloeTreeNode.__init__(self, "album")
-    self._albums = {}
-    self._genspecs = {}
-    self._items = {}
-    self._outputspecs = {}
-    self._album_names_to_uuids = {}
+    MANDATORY_ELEMENTS = ("name", "uuid")
+    def __init__(self):
+        SloeTreeNode.__init__(self, "album")
+        self.subalbum_dict = {}
+        self.genspec_dict = {}
+        self.item_dict = {}
+        self.parent_album = None
+        self.outputspec_dict = {}
+        self._album_names_to_uuids = {}
 
 
-  @classmethod
-  def new_from_ini_file(cls, ini_filepath, error_info):
-    album = SloeAlbum()
-    album.create_from_ini_file(ini_filepath, error_info)
-    return album
+    @classmethod
+    def new_from_ini_file(cls, ini_filepath, error_info):
+        album = SloeAlbum()
+        album.create_from_ini_file(ini_filepath, error_info)
+        return album
 
 
-  def get_ini_leafname(self):
-    return "+" + SloeTreeNode.get_ini_leafname(self)
+    def get_ini_leafname(self):
+        return "+" + SloeTreeNode.get_ini_leafname(self)
 
 
-  def create_new(self, name, full_path):
-    title = ""
-    match = re.match(r'mays([0-9]{4})$', name)
-    if match:
-      title = "Cambridge May Bumps %s" % match.group(1)
+    def create_new(self, name, full_path):
+        title = ""
+        match = re.match(r'mays([0-9]{4})$', name)
+        if match:
+            title = "Cambridge May Bumps %s" % match.group(1)
 
-    match = re.match(r'hoc([0-9]{4})$', name)
-    if match:
-      title = "Head of the Cam %s" % match.group(1)
+        match = re.match(r'hoc([0-9]{4})$', name)
+        if match:
+            title = "Head of the Cam %s" % match.group(1)
 
-    match = re.match(r'div(.*)$', name)
-    if match:
-      title = "Division %s" % match.group(1).upper()
+        match = re.match(r'div(.*)$', name)
+        if match:
+            title = "Division %s" % match.group(1).upper()
 
-    day_map = {
-      "mon" : "Monday",
-      "tues" : "Tuesday",
-      "wed" : "Wednesday",
-      "thurs" : "Thursday",
-      "fri" : "Friday",
-      "sat" : "Saturday",
-      "sun" : "Sunday"
-    }
+        day_map = {
+            "mon" : "Monday",
+            "tues" : "Tuesday",
+            "wed" : "Wednesday",
+            "thurs" : "Thursday",
+            "fri" : "Friday",
+            "sat" : "Saturday",
+            "sun" : "Sunday"
+        }
 
-    if name in day_map.keys():
-      title = day_map[name]
+        if name in day_map.keys():
+            title = day_map[name]
 
-    match = re.match(r'div(.*)$', name)
-    if match:
-      title = "%s" % match.group(1).upper()
+        match = re.match(r'div(.*)$', name)
+        if match:
+            title = "%s" % match.group(1).upper()
 
-
-
-    self._d.update({
-      "name" : name,
-      "_save_dir" : full_path,
-      "title" : title,
-      "uuid" : uuid.uuid4()
-    })
+        self._d.update({
+            "name" : name,
+            "_save_dir" : full_path,
+            "title" : title,
+            "uuid" : uuid.uuid4()
+        })
 
 
-  def get_child_album_by_name(self, name):
-    uuid = self._album_names_to_uuids.get(name, None)
-    if uuid is None:
-      raise SloeError("Missing album '%s'" % name)
-    return get_child_album(uuid)
+    def get_child_album_by_name(self, name):
+        uuid = self._album_names_to_uuids.get(name, None)
+        if uuid is None:
+            raise SloeError("Missing album '%s'" % name)
+        return get_child_album(uuid)
 
 
-  def get_child_album(self, uuid):
-    album = self._albums.get(uuid, None)
-    if album is None:
-      raise SloeError("Missing album '%s'" % name)
-    return album
+    def get_child_album(self, uuid):
+        album = self.subalbum_dict.get(uuid, None)
+        if album is None:
+            raise SloeError("Missing album '%s'" % name)
+        return album
 
 
-  def get_child_album_or_none(self, uuid):
-    return self._albums.get(uuid, None)
+    def get_child_album_or_none(self, uuid):
+        return self.subalbum_dict.get(uuid, None)
 
 
-  def get_albums(self):
-    return self._albums.values()
+    @property
+    def subalbums(self):
+        return self.subalbum_dict.values()
 
 
-  def get_genspecs(self):
-    return self._genspecs.values()
+    @property
+    def genspecs(self):
+        return self.genspec_dict.values()
 
 
-  def get_items(self):
-    return self._items.values()
+    @property
+    def items(self):
+        return self.item_dict.values()
 
 
-  def get_outputspecs(self):
-    return self._outputspecs.values()
+    @property
+    def outputspecs(self):
+        return self.outputspec_dict.values()
 
 
-
-  def add_child_album(self, album):
-    album.set_value("parent_album", self.uuid)
-    self._albums[album.uuid] = album
-    self._album_names_to_uuids[album.name] = album.uuid
-    return album
-
-
-  def add_child_genspec(self, genspec):
-    self._genspecs[genspec.uuid] = genspec
-    genspec.set_value("parent_album", self._d["uuid"])
+    def add_child_album(self, obj):
+        obj.set_value("parent_album", self.uuid)
+        obj.parent_album = self
+        self.subalbum_dict[obj.uuid] = obj
+        self._album_names_to_uuids[obj.name] = obj.uuid
+        return obj
 
 
-  def add_child_item(self, item):
-    self._items[item.uuid] = item
-    item.set_value("parent_album", self._d["uuid"])
+    def add_child_genspec(self, obj):
+        self.genspec_dict[obj.uuid] = obj
+        obj.set_value("parent_album", self._d["uuid"])
 
 
-  def add_child_outputspec(self, obj):
-    self._outputspecs[obj.uuid] = obj
-    obj.set_value("parent_album", self._d["uuid"])
+    def add_child_item(self, obj):
+        self.item_dict[obj.uuid] = obj
+        obj.set_value("parent_album", self._d["uuid"])
 
 
-  def __repr__(self):
-    return "ALBUMS=" + pformat(self._albums) + "\nITEMS=" + pformat(self._items)
+    def add_child_outputspec(self, obj):
+        self.outputspec_dict[obj.uuid] = obj
+        obj.set_value("parent_album", self._d["uuid"])
 
+
+    def __repr__(self):
+        return "ALBUMS=" + pformat(self.subalbum_dict) + "\nITEMS=" + pformat(self.item_dict)
 
 

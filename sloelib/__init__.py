@@ -9,9 +9,10 @@ from sloeoutpututil import SloeOutputUtil
 from sloetree import SloeTree
 from sloetrees import SloeTrees
 from sloetreeutil import SloeTreeUtil
+from sloeworkmanager import SloeWorkManager
 
 
-__all__ = ["SloeAlbum", "SloeConfig", "SloeError", "SloeGenSpec", "SloeItem", "SloeOutputSpec",
-           "SloeOutputUtil", "SloeTree", "SloeTreeNode", "SloeTrees", "SloeTreeUtil"]
+__all__ = ["SloeAlbum", "SloeConfig", "SloeError", "SloeGenSpec", "SloeItem",
+           "SloeOutputSpec", "SloeOutputUtil", "SloeTree", "SloeTreeNode", "SloeTrees", "SloeTreeUtil", "SloeWorkManager"]
 __version__ = "0.0.1"
 
