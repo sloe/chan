@@ -56,6 +56,10 @@ class SloeConfig:
     return self.get_section(section)[name]
 
 
+  def get_or_none(self, section, name):
+    return self.get_section(section).get(name, None)
+
+
   def set_options(self, opt):
     self.options = opt
 

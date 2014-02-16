@@ -50,7 +50,7 @@ class SloePlugInManager(object):
                                     logging.info("Loaded plugin '%s'" % short_name)
                                 except Exception, e:
                                     try:
-                                        logging.error(*traceback.format_tb(sys.exc_info()[2]))
+                                        logging.error("".join(traceback.format_tb(sys.exc_info()[2])))
                                     except:
                                         pass
                                     logging.error("Plugin '%s' failed to load: %s" % (name, str(e)))

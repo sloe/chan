@@ -27,6 +27,9 @@ class SloeApp:
         parser.add_option("--final",
                           action="store_true", dest="final", default=False,
                           help="generate_cfg for final directory")
+        parser.add_option("--keepsandbox",
+                          action="store_true", dest="keepsandbox", default=False,
+                          help="do not delete sandbox files after completion")
         parser.add_option("--reset-sloeid",
                           action="store_true", dest="resetsloeid", default=False,
                           help="reset sloeid values in Youtube tags")
