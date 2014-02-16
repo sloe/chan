@@ -79,11 +79,12 @@ class SloeItem(SloeTreeNode):
         return os.path.join(root_dir, self._d["primacy"], self._d["worth"], self._d["tree"], self._d["subtree"])
 
 
-    def get_filepath(self):
+    def get_file_path(self):
         return os.path.join(self.get_file_dir(), self._d["leafname"])
+    
 
     def get_ini_filepath(self):
-        treepath = os.path.dirname(self.get_filepath())
+        treepath = os.path.dirname(self.get_file_path())
         return os.path.join(treepath, self.get_ini_leafname());
 
 

@@ -2,7 +2,11 @@
 import logging
 import os
 from pprint import pformat, pprint
+import subprocess
+import sys
+
 import sloelib
+
 
 class SloePluginAfterEffects(object):
     instance = None
@@ -37,27 +41,54 @@ class SloePluginAfterEffects(object):
 
     
     def do_render_job(self, genspec, item, outputspec):
+        glb_cfg = sloelib.SloeConfig.get_global()        
         logging.info("Performing render job for '%s'" % item.name)
         if self.aerender is None:
-            raise sloelib.SloeError("Unable to render - cannt find aerender.exe") 
+            raise sloelib.SloeError("Unable to render - cannot find aerender.exe") 
             
         sandbox = sloelib.SloeSandbox("aftereffects")
+        src_movie = item.get_file_path()
+        dest_movie = "source_footage%s" % os.path.splitext(src_movie)[1]
+        output_movie = "source_footage%s" % os.path.splitext(src_movie)[1]
+        
+        ae_proj_subdir = glb_cfg.get("global", "aeprojectdir")
+        script_dir = glb_cfg.get_option("script_dir")
+        src_project = os.path.join(script_dir, ae_proj_subdir, genspec.aftereffects_project)
+        dest_project = os.path.basename(src_project)
+        
         sandbox.create(files_to_copy = {
-
+            src_project : dest_project,
+            src_movie : dest_movie
         })
         
+        if glb_cfg.get_option("prerenderabort"):
+            logging.info("Aborting due to --prerenderabort flag")
+            sys.exit(1)
         command = [
             self.aerender,
-            "-project", "ae_project_path",
+            "-project", sandbox.get_sandbox_path_for_source(src_project),
             "-comp", "Output Comp",
-            "-e", str("dest_frames"),
-            "-OMtemplate", "output_module",
+            "-e", str("60"),
+            "-OMtemplate", genspec.aftereffects_outputmodule,
             "-reuse",
-            "-output", "sandbox_output_pathname"            
+            "-output", sandbox.get_sandbox_path(genspec.aftereffects_outputfilename)           
         ]
+        
+
         print "genspec=%s" % pformat(genspec)
         print "item=%s" % pformat(item)
         print "outputspec=%s" % pformat(outputspec)
+        
+        logging.info("Executing command %s" % " ".join(command))
+        
+        p = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        (stdout, stderr) = p.communicate()
+        if p.returncode != 0:        
+            raise sloelib.SloeError("Command failed with return code %d: %s\n%s" % (p.returncode, "".join(stderr), "".join(stdout)))        
+        
+        if glb_cfg.get_option("postrenderabort"):
+            logging.info("Aborting due to --postrenderabort flag")
+            sys.exit(1) 
         sandbox.destroy()
     
     

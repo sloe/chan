@@ -28,6 +28,10 @@ class SloeSandbox(object):
             return self._sandbox_dir
         else:
             return  os.path.join(self._sandbox_dir, extra)
+  
+  
+    def get_sandbox_path_for_source(self, src):
+        return self.get_sandbox_path(self.filemap[src])
             
             
     def get_lock_filepath(self):
@@ -69,6 +73,7 @@ class SloeSandbox(object):
             else:
                 logging.info("Process holding sandbox lock (PID=%d) is not running - destroying sandbox" % lock_pid)   
                 self.destroy()
+
             
         
     def create(self, files_to_copy):
@@ -84,7 +89,7 @@ class SloeSandbox(object):
         for src, dest in files_to_copy.iteritems():
             sandbox_dest = os.path.join(sandbox_path, dest)
             self.filemap[src] = dest
-            logging.info("Copying file '%s' into sandbox '%s'" % (src, sandbox_dest))
+            logging.info("Copying file '%s' (%.1f MB) into sandbox '%s'" % (src, float(os.path.getsize(src)) / 2 ** 20, sandbox_dest))
             shutil.copy2(src, sandbox_dest)
             
             

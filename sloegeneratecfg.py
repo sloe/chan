@@ -79,7 +79,7 @@ class SloeGenerateCfg:
   def detect_video_params(self, item):
     command = [
       self.app.get_global("ffprobe"),
-      item.get_filepath(),
+      item.get_file_path(),
       "-print_format", "json", "-show_format", "-show_streams"]
 
     p = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)

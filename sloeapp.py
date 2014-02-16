@@ -30,6 +30,12 @@ class SloeApp:
         parser.add_option("--keepsandbox",
                           action="store_true", dest="keepsandbox", default=False,
                           help="do not delete sandbox files after completion")
+        parser.add_option("--prerenderabort",
+                          action="store_true", dest="prerenderabort", default=False,
+                          help="abort before the first render command, leaving sandbox files in place")
+        parser.add_option("--postrenderabort",
+                          action="store_true", dest="postrenderabort", default=False,
+                          help="abort after the first render command, leaving sandbox files in place")      
         parser.add_option("--reset-sloeid",
                           action="store_true", dest="resetsloeid", default=False,
                           help="reset sloeid values in Youtube tags")
