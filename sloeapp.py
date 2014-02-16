@@ -30,6 +30,9 @@ class SloeApp:
         parser.add_option("--reset-sloeid",
                           action="store_true", dest="resetsloeid", default=False,
                           help="reset sloeid values in Youtube tags")
+        parser.add_option("--script-dir",
+                          action="store_true", dest="script_dir", default=os.path.dirname(os.path.abspath(__file__)),
+                          help="Path to the directory containing %s" % os.path.dirname(__file__))        
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="verbose output")
@@ -53,6 +56,9 @@ class SloeApp:
         logging.getLogger().setLevel(self.loglevel)
 
         glb_cfg.set_options(self.options)
+
+        # Load plugins once config is ready
+        sloelib.SloePlugInManager.inst().load_plugins()
 
         if len(self.args) == 0:
             parser.error("Please supply a command argument")

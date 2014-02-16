@@ -6,13 +6,14 @@
 [project attributes]
 proj.directory-list = [{'dirloc': loc('.'),
                         'excludes': [u'sloelib/sloejobmanager.py',
-                                     u'sloelib/sloerenderjob.py',
+                                     u'youtubetree_idmap_cache.pickle',
                                      u'oauth_storage.json',
                                      u'test.py-oauth2.json',
                                      u'chan.psproj',
                                      u'lstree.txt',
                                      u'.gitignore',
-                                     u'youtubetree_idmap_cache.pickle',
+                                     u'sloelib/sloerenderjob.py',
+                                     u'sloelib/sloepluginmanager.py',
                                      u'youtubetree_idmap_cache.valid',
                                      u'oauth_storage_r.json',
                                      u'verbose_lstree.txt',
@@ -24,6 +25,7 @@ proj.directory-list = [{'dirloc': loc('.'),
                         'watch_for_changes': True}]
 proj.file-list = [loc('sloeapp.py'),
                   loc('sloegeneratecfg.py'),
+                  loc('sloelib/sloepluginmanager.py'),
                   loc('sloelib/sloerenderjob.py')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('sloeapp.py'): ('project',

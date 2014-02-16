@@ -8,6 +8,7 @@ from sloeitem import SloeItem
 from sloelocalexec import SloeLocalExec
 from sloeoutputspec import SloeOutputSpec
 from sloeoutpututil import SloeOutputUtil
+from sloepluginmanager import SloePlugInManager
 from sloerenderjob import SloeRenderJob
 from sloetree import SloeTree
 from sloetrees import SloeTrees
