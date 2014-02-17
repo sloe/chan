@@ -29,6 +29,6 @@ proj.file-list = [loc('sloeapp.py'),
                   loc('sloelib/sloerenderjob.py')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('sloeapp.py'): ('project',
-        (u'dowork mays2013 \n',
+        (u'dowork --postrenderabort  mays2013 \n',
          ''))}
 proj.main-file = loc('sloeapp.py')

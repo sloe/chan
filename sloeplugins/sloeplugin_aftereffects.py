@@ -1,5 +1,6 @@
 
 import logging
+import math
 import os
 from pprint import pformat, pprint
 import subprocess
@@ -64,11 +65,23 @@ class SloePluginAfterEffects(object):
         if glb_cfg.get_option("prerenderabort"):
             logging.info("Aborting due to --prerenderabort flag")
             sys.exit(1)
+         
+        conformed_frame_rate = sloelib.SloeUtil.get_canonical_frame_rate(item.video_avg_frame_rate)
+        
+        input_to_output_frame_factor = float(genspec.output_frame_rate) / (float(conformed_frame_rate)  * float(genspec.speed_factor))
+        # Use math.trunc to round down, so when speeding up (speed_factor > 1) we don't generate
+        # frames after the input source has run out
+        last_frame = math.trunc(float(item.video_nb_frames) * input_to_output_frame_factor)
+            
+        # After Effects numbers frames from zero, so the last frame is one less than the number of frames
+        if last_frame > 0:
+            last_frame -= 1
+            
         command = [
             self.aerender,
             "-project", sandbox.get_sandbox_path_for_source(src_project),
-            "-comp", "Output Comp",
-            "-e", str("60"),
+            "-comp", genspec.aftereffects_outputcomp,
+            "-e", str(last_frame),
             "-OMtemplate", genspec.aftereffects_outputmodule,
             "-reuse",
             "-output", sandbox.get_sandbox_path(genspec.aftereffects_outputfilename)           

@@ -31,4 +31,32 @@ class SloeUtil(object):
     
         return proc_ids
     
+    KNOWN_FRAME_RATES = [
+    "23.976",
+    "25",
+    "29.97",
+    "50",
+    "59.94"]
     
+    @classmethod    
+    def get_canonical_frame_rate(cls, framerate_string):
+        split_rate = framerate_string.split("/")
+
+        if len(split_rate) == 1:
+            float_rate = float(split_rate[0])
+        elif len(split_rate) == 2:
+            float_rate = float(split_rate[0]) / float(split_rate[1])
+        else:
+            raise SloeError("Cannot determine frame rate from %s" % framerate_string)
+        
+        for rate in cls.KNOWN_FRAME_RATES:    
+            if abs(float_rate - float(rate)) < 0.01:
+                logging.debug("Conforming rate %s (%.4f) to %s" % (framerate_string, float_rate, rate))
+                return rate
+            
+            
+        logging.debug("Failed to conform frame rate %s (%.4f)" % (framerate_string, float_rate))        
+        return str(float_rate)
+    
+            
+            

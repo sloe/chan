@@ -89,7 +89,7 @@ class SloeSandbox(object):
         for src, dest in files_to_copy.iteritems():
             sandbox_dest = os.path.join(sandbox_path, dest)
             self.filemap[src] = dest
-            logging.info("Copying file '%s' (%.1f MB) into sandbox '%s'" % (src, float(os.path.getsize(src)) / 2 ** 20, sandbox_dest))
+            logging.info("Copying file '%s' (%.1fMB) into sandbox '%s'" % (src, float(os.path.getsize(src)) / 2 ** 20, sandbox_dest))
             shutil.copy2(src, sandbox_dest)
             
             
