@@ -75,7 +75,7 @@ class SloePlugInManager(object):
     def call_plugin(self, name, method_name, *args, **keywords):
         plugin = self.plugins.get(name, None)
         if plugin is None:
-            raise SloeError("Plugin name '%s' does not exist" % name)
+            raise SloeError("Plugin name '%s' does not exist or failed to load" % name)
         methods = plugin.get("methods", None)
         method = methods.get(method_name, None)
         if not method:

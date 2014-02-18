@@ -30,6 +30,7 @@ class SloeUtil(object):
                 win32pdh.CloseQuery(hq) 
     
         return proc_ids
+ 
     
     KNOWN_FRAME_RATES = [
     "23.976",
@@ -40,14 +41,7 @@ class SloeUtil(object):
     
     @classmethod    
     def get_canonical_frame_rate(cls, framerate_string):
-        split_rate = framerate_string.split("/")
-
-        if len(split_rate) == 1:
-            float_rate = float(split_rate[0])
-        elif len(split_rate) == 2:
-            float_rate = float(split_rate[0]) / float(split_rate[1])
-        else:
-            raise SloeError("Cannot determine frame rate from %s" % framerate_string)
+        float_rate = cls.fraction_to_float(framerate_string)
         
         for rate in cls.KNOWN_FRAME_RATES:    
             if abs(float_rate - float(rate)) < 0.01:
@@ -58,5 +52,16 @@ class SloeUtil(object):
         logging.debug("Failed to conform frame rate %s (%.4f)" % (framerate_string, float_rate))        
         return str(float_rate)
     
+    
+    @classmethod    
+    def fraction_to_float(cls, fraction_string):
+        split_value = fraction_string.split("/")
+
+        if len(split_value) == 1:
+            float_value = float(split_value[0])
+        elif len(split_value) == 2:
+            float_value = float(split_value[0]) / float(split_value[1])
+        else:
+            raise SloeError("Cannot determine numerical value from %s" % framerate_string)            
             
-            
+        return float_value

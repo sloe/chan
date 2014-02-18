@@ -68,7 +68,8 @@ class SloePluginAfterEffects(object):
          
         conformed_frame_rate = sloelib.SloeUtil.get_canonical_frame_rate(item.video_avg_frame_rate)
         
-        input_to_output_frame_factor = float(genspec.output_frame_rate) / (float(conformed_frame_rate)  * float(genspec.speed_factor))
+        input_to_output_frame_factor = (float(genspec.output_frame_rate) /
+            (float(conformed_frame_rate) * sloelib.SloeUtil.fraction_to_float(genspec.speed_factor)))
         # Use math.trunc to round down, so when speeding up (speed_factor > 1) we don't generate
         # frames after the input source has run out
         last_frame = math.trunc(float(item.video_nb_frames) * input_to_output_frame_factor)
