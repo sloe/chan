@@ -54,14 +54,22 @@ class SloeTreeNode(object):
         if name in node:
             return node[name]
         else:
-            raise AttributeError("%s '%s' (%s) has no element named '%s' (%s)" % (
-                self._d.get("type", "<unknown>"),
-                self._d.get("name", "<unknown>"),
-                self._d.get("uuid", "no UUID"),
-                name,
-                self._d.get("_location", "no location")
-                ))
-                                                 
+            auto_name = "auto_"+name
+            if auto_name in node:
+                return node[auto_name]   
+            else:
+                raise AttributeError("%s '%s' (%s) has no element named '%s' (%s)" % (
+                    self._d.get("type", "<unknown>"),
+                    self._d.get("name", "<unknown>"),
+                    self._d.get("uuid", "no UUID"),
+                    name,
+                    self._d.get("_location", "no location")
+                    ))
+        
+        
+    def update(self, param_dict):
+        self._d.update(param_dict
+                       )        
 
     def create_from_ini_file(self, ini_filepath, error_info):
         with open(ini_filepath, "rb") as ini_fp:
@@ -122,7 +130,7 @@ class SloeTreeNode(object):
                 missing_elements.append(element)
 
         if len(missing_elements) > 0:
-            raise SloeError("Missing elements %s when creating object" % ", ".join(missing_elements))
+            raise SloeError("Missing elements '%s' when creating object" % ", ".join(missing_elements))
 
 
     def get_ini_leafname(self):
@@ -153,7 +161,8 @@ class SloeTreeNode(object):
                 user.append(name)
                 
         for name in automatic + mandatory + user:
-            parser.set(section, name, '"%s"' % str(self._d[name]))
+            if self._d[name] is not None:    
+                parser.set(section, name, '"%s"' % str(self._d[name]))
 
         with open(self.get_ini_filepath(), "wb") as fp:
             fp.write("# File saved at %s\n\n" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'))

@@ -82,7 +82,7 @@ class SloeTreeUtil(object):
             for obj in album.genspecs:
                 if obj.name == genspec_name:
                     return obj.uuid
-        raise SloeError("GenSpec not found for nme '%s'" % genspec_name)
+        raise SloeError("GenSpec not found for name '%s'" % genspec_name)
     
     
     @classmethod 

@@ -3,6 +3,7 @@ import logging
 import math
 import os
 from pprint import pformat, pprint
+import shutil
 import subprocess
 import sys
 
@@ -41,7 +42,27 @@ class SloePluginAfterEffects(object):
 
     
     def do_render_job(self, genspec, item, outputspec):
-        glb_cfg = sloelib.SloeConfig.inst()        
+        
+        final_output_path = sloelib.SloeOutputUtil.get_output_path(genspec, item, outputspec)
+        if not os.path.isdir(os.path.dirname(final_output_path)):
+            os.makedirs(os.path.dirname(final_output_path))
+            
+        lock_path = final_output_path + '.lock'
+        if os.path.isfile(lock_path):
+            raise sloelib.SloeError("Abandoning render because lock file '%s' exists" % lock_path)
+        
+        with open(lock_path, mode="w") as f:
+             f.write("%d\n%s (PID=%d) has locked this output destination" % (os.getpid(), __file__, os.getpid()))
+        
+        try:
+            self.do_render_to_path(genspec, item, outputspec, final_output_path)
+        
+        finally:
+            os.unlink(lock_path)
+            
+            
+        
+    def do_render_to_path(self, genspec, item, outputspec, final_output_path):
         logging.info("Performing render job for '%s'" % item.name)
         if self.aerender is None:
             raise sloelib.SloeError("Unable to render - cannot find aerender.exe") 
@@ -51,7 +72,7 @@ class SloePluginAfterEffects(object):
         dest_movie = "source_footage%s" % os.path.splitext(src_movie)[1]
         output_movie = "source_footage%s" % os.path.splitext(src_movie)[1]
         
-        ae_proj_subdir = glb_cfg.get_value("global", "aeprojectdir")
+        ae_proj_subdir =  sloelib.SloeConfig.get_global("aeprojectdir")
         script_dir = sloelib.SloeConfig.get_option("script_dir")
         src_project = os.path.join(script_dir, ae_proj_subdir, genspec.aftereffects_project)
         dest_project = os.path.basename(src_project)
@@ -77,6 +98,8 @@ class SloePluginAfterEffects(object):
         if last_frame > 0:
             last_frame -= 1
             
+        sandbox_output_path = sandbox.get_sandbox_path(genspec.aftereffects_outputfilename)
+            
         command = [
             self.aerender,
             "-project", sandbox.get_sandbox_path_for_source(src_project),
@@ -84,13 +107,13 @@ class SloePluginAfterEffects(object):
             "-e", str(last_frame),
             "-OMtemplate", genspec.aftereffects_outputmodule,
             "-reuse",
-            "-output", sandbox.get_sandbox_path(genspec.aftereffects_outputfilename)           
+            "-output", sandbox_output_path          
         ]
         
-
-        print "genspec=%s" % pformat(genspec)
-        print "item=%s" % pformat(item)
-        print "outputspec=%s" % pformat(outputspec)
+        if sloelib.SloeConfig.get_option("verbose"):
+            print "genspec=%s" % pformat(genspec)
+            print "item=%s" % pformat(item)
+            print "outputspec=%s" % pformat(outputspec)
         
         logging.info("Executing command %s" % " ".join(command))
         
@@ -101,9 +124,15 @@ class SloePluginAfterEffects(object):
         
         if sloelib.SloeConfig.get_option("postrenderabort"):
             logging.info("Aborting due to --postrenderabort flag")
-            sys.exit(1) 
+            sys.exit(1)
+            
+        final_output_path = sloelib.SloeOutputUtil.get_output_path(genspec, item, outputspec)
+        
+        shutil.move(sandbox_output_path, final_output_path)
+            
         sandbox.destroy()
     
+        sloelib.SloeOutputUtil.create_output_ini(genspec, item, outputspec)        
     
     @classmethod
     def register(cls):

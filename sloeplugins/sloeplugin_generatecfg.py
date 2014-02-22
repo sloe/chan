@@ -23,11 +23,17 @@ class SloePluginGenerateConfig(object):
         else:
             primacy = "primary"
 
+        
+        treeroot = sloelib.SloeConfig.get_global("treeroot")
+        primacy_tree = os.path.join(treeroot, primacy)
+        self.process_dir("root", treeroot)        
+        self.process_dir(primacy, primacy_tree)        
+        for worth in sloelib.SloeConfig.get_global("worths").split(","):
+            self.process_dir(worth, os.path.join(primacy_tree, worth))   
+            
         for worth, walkroot in sloelib.SloeTrees.inst().get_treepaths(primacy, subtree).iteritems():
             logging.debug("generate_cfg walking tree directory %s" % walkroot)
-
-            if not os.path.exists(walkroot):
-                os.makedirs(walkroot)
+            
             self.process_dir(os.path.basename(walkroot), walkroot)
 
             for dirpath, dirs, files in os.walk(walkroot, topdown=True, followlinks=False):
@@ -52,11 +58,41 @@ class SloePluginGenerateConfig(object):
 
     def process_dir(self, name, full_path):
         logging.debug("Processing directory %s" % full_path)
+        if not os.path.exists(full_path):
+            os.makedirs(full_path)        
         album_files = glob.glob(os.path.join(full_path, "*ALBUM=*.ini"))
         if album_files == []:
+            # Find UUID of parent album
+            parent_uuid = None
+            parent_dir = full_path
+            while parent_uuid is None:
+                if parent_dir == os.path.dirname(parent_dir):
+                    logging.error("Directory search reached root directory")
+                    break
+                parent_dir = os.path.dirname(parent_dir)
+                
+                album_files = glob.glob(os.path.join(parent_dir, "*ALBUM=*.ini"))     
+                if len(album_files) > 1:
+                    logging.error("More than one potential parent album in %s - please set in %s manually" % (parent_dir, full_path))
+                    break
+                if len(album_files) == 1:
+                    temp_album = sloelib.SloeAlbum()
+                    temp_album.create_from_ini_file(os.path.join(parent_dir, album_files[0]),
+                                                            "Loading album to determine parent")
+                    parent_uuid = temp_album.uuid
+
+                if os.path.normpath(parent_dir).lower() == os.path.normpath(sloelib.SloeConfig.get_global("treeroot")).lower():
+                    logging.error("Search for parent album abandoned in %s" % parent_dir)                    
+                    break
+                
+ 
+            
             logging.debug("Creating template album file in %s" % full_path)
             album = sloelib.SloeAlbum()
             album.create_new(name, full_path)
+            if parent_uuid is not None:
+                logging.info("Found parent album for %s in %s UUID %s" % (full_path, parent_dir, parent_uuid))     
+                album.set_value("parent_uuid", parent_uuid)            
             if not sloelib.SloeConfig.get_option("dryrun"):
                 album.save_to_file()
 
@@ -68,41 +104,10 @@ class SloePluginGenerateConfig(object):
         existing_item = current_tree.get_item_from_spec(spec)
         item = sloelib.SloeItem()
         item.create_new(existing_item, spec)
-        self.detect_video_params(item)
+        
+        item.update(sloelib.SloeVideoUtil.detect_video_params(item.get_file_path()))
         if not sloelib.SloeConfig.get_option("dryrun"):
             item.save_to_file()
-
-
-    def detect_video_params(self, item):
-        command = [
-            sloelib.SloeConfig.get_global("ffprobe"),
-            item.get_file_path(),
-            "-print_format", "json", "-show_format", "-show_streams"]
-
-        p = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-        (json_out, stderr) = p.communicate()
-        if p.returncode != 0:
-            logging.error("ffprobe failed (rc=%d)\n%s" % (p.returncode, stderr))
-            raise sloelib.SloeError("ffprobe failed (rc-%d)" % p.returncode)
-        ffinfo = json.loads(json_out)
-        for stream in ffinfo["streams"]:
-            if stream["codec_type"] == "video":
-                for name in ("codec_name", "width", "height", "pix_fmt", "level", "avg_frame_rate", "duration", "nb_frames"):
-                    if name in stream:
-                        item.set_value("auto_video_" + name, stream[name])
-            elif stream["codec_type"] == "audio":
-                for name in ("bit_rate", "codec_name", "sample_fmt", "sample_rate", "channels", "duration", "nb_frames"):
-                    if name in stream:
-                        item.set_value("auto_audio_" + name, stream[name])
-            else:
-                handler_name = stream.get("tags", {}).get("handler_name", "")
-                if handler_name == "Timed Metadata Handler":
-                    logging.debug("Ignoring Timed Metadata Handler stream")
-                else:
-                    logging.error("Ignoring unknown stream %s" % pformat(stream))
-        for name in ("format_name", "format_long_name", "size", "bit_rate"):
-            if name in ffinfo["format"]:
-                item.set_value("auto_video_" + name, ffinfo["format"][name])    
     
     
     @classmethod

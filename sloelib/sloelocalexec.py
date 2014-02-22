@@ -25,6 +25,8 @@ class SloeLocalExec(object):
             item=item,
             outputspec=outputspec)
             
+        
+            
             
         
             

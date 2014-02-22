@@ -9,7 +9,7 @@ from sloeerror import SloeError
 from sloetreenode import SloeTreeNode
 
 class SloeOutputSpec(SloeTreeNode):
-    MANDATORY_ELEMENTS = ("name", "uuid")
+    MANDATORY_ELEMENTS = ("name", "output_path", "primacy", "uuid", "worth")
     def __init__(self):
         SloeTreeNode.__init__(self, "outputspec", "04")
 

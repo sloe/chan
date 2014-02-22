@@ -1,4 +1,5 @@
 
+import datetime
 import fnmatch
 import logging
 import os
@@ -23,13 +24,14 @@ class SloeWorkManager(object):
         work = []
         add_workspec = False
         glob_include = outputspec.get("glob_include", None)
-        if fnmatch.fnmatch(item.leafname, glob_include):
+        if fnmatch.fnmatch(item.leafname, glob_include)  and item.primacy == "primary":
             add_workspec = True
             
         if add_workspec:
             common_id = "O=%s,I=%s" % (outputspec.uuid, item.uuid)
             workspec = SloeRenderJob()
             workspec.set_values(
+                name="workitem %s" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
                 common_id=common_id,
                 leafname="+renderjob,%s" % common_id
             )

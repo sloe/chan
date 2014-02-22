@@ -24,6 +24,10 @@ class SloeTree:
 
     def __init__(self):
         self.loaded = False
+        self.reset()
+        
+        
+    def reset(self):
         self.root_album = SloeAlbum()
         self.root_album.set_value("_location", "root")
         self.root_album.set_value("name", "root")
@@ -62,7 +66,7 @@ class SloeTree:
     def get_item_from_spec(self, spec):
         def test(item):
             return (
-                item.primacy == spec["primacy"] and
+                item.get("common_id", None) == spec.get("common_id", None) and
                 item.subtree == spec["subtree"] and
                 item.name == spec["name"])
         return self.find_in_tree(test)
@@ -75,7 +79,7 @@ class SloeTree:
 
     def load(self):
         logging.debug("Loading tree")
-
+        self.reset()
         for primacy in SloeConfig.get_global("primacies").split(","):
             for worth in SloeConfig.get_global("worths").split(","):
                 subdir_path = os.path.join(SloeConfig.get_global("treeroot"), primacy, worth)
@@ -91,6 +95,7 @@ class SloeTree:
                             name = match.group(1)
                             filename_uuid = match.group(2)
                             subtree = string.replace(os.path.relpath(root, subdir_path), "\\", "/")
+                            
                             if album_for_path is None:
                                 album_for_path = self.load_album_for_path(root)
                             bytecount += self.add_item_from_ini(primacy, worth, subdir_path, subtree, filename, name, filename_uuid, album_for_path)
@@ -127,7 +132,7 @@ class SloeTree:
                         album_found = parent_album.add_child_album(album_from_ini)
 
             if not album_found:
-                raise SloeError("Missing ALBUM= .ini files in %s" % full_path)
+                logging.error("Missing ALBUM= .ini files in %s" % full_path)
 
             for filename in filenames:
                 match = self.genspec_ini_regex.match(filename)
@@ -156,6 +161,22 @@ class SloeTree:
         return album
 
 
+    @classmethod 
+    def walk_albums(cls, album):
+        yield album
+        for subalbum in album.subalbums:
+            for x in cls.walk_albums(subalbum):
+                yield x
+
+    @classmethod 
+    def find_album_or_none(cls, album_uuid):
+        for album in cls.walk_albums(cls.inst().root_album):
+            if album.uuid == album_uuid:
+                return album
+
+        return None
+
+
     def add_item_from_ini(self, primacy, worth, subdir_path, subtree, filename, name, filename_uuid, dest_album):
         full_path = os.path.join(subdir_path, subtree, filename)
         item = SloeItem.new_from_ini_file(full_path, "SloeTree.add_item_from_ini: " + full_path)
@@ -181,7 +202,16 @@ class SloeTree:
         else:
             logging.warning("Missing file %s" % target_path)
 
-        dest_album.add_child_item(item)
+
+        parent_uuid = item.get("parent_uuid", None)
+        if parent_uuid is not None:
+            dest_album = self.find_album_or_none(parent_uuid)
+            if dest_album:
+                logging.info("Found parent album for %s" % full_path)
+                
+            
+        if dest_album is not None:
+            dest_album.add_child_item(item)
         return filesize
 
 
