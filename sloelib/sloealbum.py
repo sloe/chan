@@ -2,7 +2,6 @@
 import logging
 from pprint import pprint, pformat
 import re
-import uuid
 
 from sloeconfig import SloeConfig
 from sloeerror import SloeError
@@ -11,7 +10,7 @@ from sloetreenode import SloeTreeNode
 class SloeAlbum(SloeTreeNode):
     MANDATORY_ELEMENTS = ("name", "uuid")
     def __init__(self):
-        SloeTreeNode.__init__(self, "album")
+        SloeTreeNode.__init__(self, "album", "02")
         self.subalbum_dict = {}
         self.genspec_dict = {}
         self.item_dict = {}
@@ -31,6 +30,7 @@ class SloeAlbum(SloeTreeNode):
 
 
     def create_new(self, name, full_path):
+        # Stuff below needs moving into a plugin
         title = ""
         match = re.match(r'mays([0-9]{4})$', name)
         if match:
@@ -64,10 +64,10 @@ class SloeAlbum(SloeTreeNode):
         self._d.update({
             "name" : name,
             "_save_dir" : full_path,
-            "title" : title,
-            "uuid" : str(uuid.uuid4())
+            "title" : title
         })
-
+        self.create_uuid()
+        self.verify_creation_data()
 
     def get_child_album_by_name(self, name):
         uuid = self._album_names_to_uuids.get(name, None)

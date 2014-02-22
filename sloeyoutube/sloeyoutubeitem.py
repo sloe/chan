@@ -35,8 +35,8 @@ class SloeYouTubeItem:
                     tag_found = True
                     # Continue so as to remove duplicates
                 else:
-                    glb_cfg = sloelib.SloeConfig.get_global()
-                    if glb_cfg.get_option("resetsloeid"):
+                    glb_cfg = sloelib.SloeConfig.inst()
+                    if sloelib.SloeConfig.get_option("resetsloeid"):
                         logging.warning("Resetting sloeid tag for %s.  Was %s, now %s" % (self.spec[u"title"], tag, formed_tag))
                         snippet[u"tags"].remove(tag)
                         self._set_modified()

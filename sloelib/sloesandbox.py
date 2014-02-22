@@ -22,7 +22,7 @@ class SloeSandbox(object):
     
     def get_sandbox_path(self, extra=None):
         if self._sandbox_dir is None:
-            self._sandbox_dir = os.path.join(SloeConfig.get_global().get("global", "sandboxdir"), self.subdir)
+            self._sandbox_dir = os.path.join(SloeConfig.inst().get_value("global", "sandboxdir"), self.subdir)
         
         if extra is None:
             return self._sandbox_dir
@@ -97,7 +97,7 @@ class SloeSandbox(object):
         if not self.is_locked():
             raise SloeError("Cannot destroy sandbox because lock not held")
             
-        keepsandbox = SloeConfig.get_global().get_option("keepsandbox")            
+        keepsandbox = SloeConfig.inst().get_option("keepsandbox")            
         if not keepsandbox:
             sandbox_path = self.get_sandbox_path()
             for dirpath, dirnames, filenames in os.walk(sandbox_path, topdown=False):

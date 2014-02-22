@@ -6,85 +6,89 @@ import ConfigParser
 from sloeerror import SloeError
 
 class SloeConfig:
-  get_globalance = None
+    instance = None
 
-  def __init__(self):
-    self.reset()
-    self.opt = None
-
-
-  @classmethod
-  def get_global(cls):
-    if cls.get_globalance is None:
-      cls.get_globalance = SloeConfig()
-    return cls.get_globalance
+    def __init__(self):
+        self.reset()
+        self.opt = None
 
 
-  def reset(self):
-    defaults  = {}
-    self.parser = ConfigParser.SafeConfigParser(defaults)
-    self.data_valid = False
+    @classmethod
+    def inst(cls):
+        if cls.instance is None:
+            cls.instance = SloeConfig()
+        return cls.instance
 
 
-  def appendfile(self, filename):
-    files = self.parser.read(filename)
-    if not files:
-      raise SloeError("Could not read config file %s" % filename)
-    self.data_valid = False
+    @classmethod
+    def get_option(cls, name):
+        return cls.inst()._get_option(name)
 
 
-  def remake_data(self):
-    if not self.data_valid:
-      self.data = {}
-      for section in self.parser.sections():
-        self.data[section] = {}
-        for name, value in self.parser.items(section):
-          if not name.startswith("_"):
-            self.data[section][name] = value
-      self.data_valid = True
+    @classmethod
+    def get_global(cls, name):
+        return cls.inst().get_value("global", name)
 
 
-  def get_section(self, section):
-    if not self.data_valid:
-      self.remake_data()
-    if section not in self.data:
-      raise SloeError("Configuration section %s not present" % section)
-    return self.data[section]
+    def reset(self):
+        defaults  = {}
+        self.parser = ConfigParser.SafeConfigParser(defaults)
+        self.data_valid = False
 
 
-  def get(self, section, name):
-    return self.get_section(section)[name]
+    def appendfile(self, filename):
+        files = self.parser.read(filename)
+        if not files:
+            raise SloeError("Could not read config file %s" % filename)
+        self.data_valid = False
 
 
-  def get_or_none(self, section, name):
-    return self.get_section(section).get(name, None)
+    def remake_data(self):
+        if not self.data_valid:
+            self.data = {}
+            for section in self.parser.sections():
+                self.data[section] = {}
+                for name, value in self.parser.items(section):
+                    if not name.startswith("_"):
+                        self.data[section][name] = value
+            self.data_valid = True
 
 
-  def set_options(self, opt):
-    self.options = opt
+    def get_section(self, section):
+        if not self.data_valid:
+            self.remake_data()
+        if section not in self.data:
+            raise SloeError("Configuration section %s not present" % section)
+        return self.data[section]
 
 
-  def get_option(self, name):
-    return getattr(self.options, name)
+    def get_value(self, section, name):
+        return self.get_section(section)[name]
 
 
-  def dump(self):
-    message = ""
-    for section in ["DEFAULT"] + self.parser.sections():
-      message += "[%s]\n" % section
-      for name, value in self.parser.items(section):
-        if not name.startswith("_"):
-          message += "%s=%s\n" % (name, value)
-
-    self.remake_data()
-    message += pformat(self.data)
-    return message
+    def get_or_none(self, section, name):
+        return self.get_section(section).get(name, None)
 
 
-  def get_tree_key(self, tree_name):
-    return "tree_" + tree_name
 
 
-  def get_tree_root_dir(self, tree_name):
-    root_dir = self.get(self.get_tree_key(tree_name), "root_dir")
-    return root_dir
+
+    def set_options(self, opt):
+        self.options = opt
+
+
+    def _get_option(self, name):
+        return getattr(self.options, name)
+
+
+    def dump(self):
+        message = ""
+        for section in ["DEFAULT"] + self.parser.sections():
+            message += "[%s]\n" % section
+            for name, value in self.parser.items(section):
+                if not name.startswith("_"):
+                    message += "%s=%s\n" % (name, value)
+
+        self.remake_data()
+        message += pformat(self.data)
+        return message

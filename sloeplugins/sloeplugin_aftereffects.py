@@ -10,7 +10,6 @@ import sloelib
 
 
 class SloePluginAfterEffects(object):
-    instance = None
     def __init__(self):
         self.aerender = self.derive_aerender_path()
         
@@ -26,7 +25,7 @@ class SloePluginAfterEffects(object):
     
     
     def path_list(self):
-        glb_cfg = sloelib.SloeConfig.get_global()
+        glb_cfg = sloelib.SloeConfig.inst()
         aerender_path = glb_cfg.get_or_none("global", "aerender")
         config_paths = []
         if aerender_path:
@@ -42,7 +41,7 @@ class SloePluginAfterEffects(object):
 
     
     def do_render_job(self, genspec, item, outputspec):
-        glb_cfg = sloelib.SloeConfig.get_global()        
+        glb_cfg = sloelib.SloeConfig.inst()        
         logging.info("Performing render job for '%s'" % item.name)
         if self.aerender is None:
             raise sloelib.SloeError("Unable to render - cannot find aerender.exe") 
@@ -52,8 +51,8 @@ class SloePluginAfterEffects(object):
         dest_movie = "source_footage%s" % os.path.splitext(src_movie)[1]
         output_movie = "source_footage%s" % os.path.splitext(src_movie)[1]
         
-        ae_proj_subdir = glb_cfg.get("global", "aeprojectdir")
-        script_dir = glb_cfg.get_option("script_dir")
+        ae_proj_subdir = glb_cfg.get_value("global", "aeprojectdir")
+        script_dir = sloelib.SloeConfig.get_option("script_dir")
         src_project = os.path.join(script_dir, ae_proj_subdir, genspec.aftereffects_project)
         dest_project = os.path.basename(src_project)
         
@@ -62,7 +61,7 @@ class SloePluginAfterEffects(object):
             src_movie : dest_movie
         })
         
-        if glb_cfg.get_option("prerenderabort"):
+        if sloelib.SloeConfig.get_option("prerenderabort"):
             logging.info("Aborting due to --prerenderabort flag")
             sys.exit(1)
          
@@ -100,7 +99,7 @@ class SloePluginAfterEffects(object):
         if p.returncode != 0:        
             raise sloelib.SloeError("Command failed with return code %d: %s\n%s" % (p.returncode, "".join(stderr), "".join(stdout)))        
         
-        if glb_cfg.get_option("postrenderabort"):
+        if sloelib.SloeConfig.get_option("postrenderabort"):
             logging.info("Aborting due to --postrenderabort flag")
             sys.exit(1) 
         sandbox.destroy()

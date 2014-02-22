@@ -14,24 +14,32 @@ from sloeitem import SloeItem
 from sloeoutputspec import SloeOutputSpec
 
 class SloeTree:
+    instance = None
+
     album_ini_regex = re.compile(r"(.*)-ALBUM=([0-9A-Fa-f-]{36}).ini$")
     genspec_ini_regex = re.compile(r"(.*)-GENSPEC=([0-9A-Fa-f-]{36})\.ini$")
     item_ini_regex = re.compile(r"(.*)-ITEM=([0-9A-Fa-f-]{36})\.ini$")
     outputspec_ini_regex = re.compile(r"(.*)-OUTPUTSPEC=([0-9A-Fa-f-]{36})\.ini$")
     ini_regex = re.compile(r".*\.ini$")
 
-    def __init__(self, spec):
-        self.spec = spec
+    def __init__(self):
         self.loaded = False
-        self.treedata = SloeAlbum()
-        self.treedata.set_value("_location", "root")
-        self.treedata.set_value("name", "root")
-        self.treedata.set_value("title", "")
-        self.treedata.set_value("uuid", "1a26ed39-1ea6-487d-8c3a-dfbc71d8df4a")
+        self.root_album = SloeAlbum()
+        self.root_album.set_value("_location", "root")
+        self.root_album.set_value("name", "root")
+        self.root_album.set_value("title", "")
+        self.root_album.set_value("uuid", "1a26ed39-1ea6-487d-8c3a-dfbc71d8df4a")
+
+    
+    @classmethod
+    def inst(cls):
+        if cls.instance is None:
+            cls.instance = SloeTree()
+        return cls.instance
 
 
     def get_root_album(self):
-        return self.treedata
+        return self.root_album
 
 
     def get_tree_uuid(self):
@@ -40,7 +48,7 @@ class SloeTree:
 
     def find_in_tree(self, test_fn):
         def recurse(album, found):
-            for item in album.get_items():
+            for item in album.items:
                 if test_fn(item):
                     return item
             for album in album.subalbums:
@@ -48,7 +56,7 @@ class SloeTree:
                 if found:
                     break
             return found
-        return recurse(self.treedata, None)
+        return recurse(self.root_album, None)
 
 
     def get_item_from_spec(self, spec):
@@ -66,12 +74,11 @@ class SloeTree:
 
 
     def load(self):
-        logging.debug("Loading tree %s" % self.spec["name"])
-        glb_cfg = SloeConfig.get_global()
+        logging.debug("Loading tree")
 
-        for primacy in glb_cfg.get("global", "primacies").split(","):
-            for worth in glb_cfg.get("global", "worths").split(","):
-                subdir_path = os.path.join(self.spec["root_dir"], primacy, worth, self.spec["name"])
+        for primacy in SloeConfig.get_global("primacies").split(","):
+            for worth in SloeConfig.get_global("worths").split(","):
+                subdir_path = os.path.join(SloeConfig.get_global("treeroot"), primacy, worth)
                 logging.debug("Walking path %s" % subdir_path)
                 filecount = 0
                 bytecount = 0
@@ -94,13 +101,13 @@ class SloeTree:
 
 
     def load_album_for_path(self, full_path):
-        root_dir = self.spec["root_dir"]
+        root_dir = SloeConfig.get_global("treeroot")
         subtree = os.path.relpath(full_path, root_dir)
         album_dirs = [""]
         for _dir in subtree.replace("\\", "/").split("/"):
             album_dirs.append(os.path.join(album_dirs[-1], _dir))
 
-        parent_album = self.treedata
+        parent_album = self.root_album
         album_found = None
         for album_dir in album_dirs:
             album_found = None
@@ -189,6 +196,5 @@ class SloeTree:
 
 
     def __repr__(self):
-        return ("|Tree|spec=" + pformat(self.spec) +
-                "\nloaded=" + pformat(self.loaded) +
-                "\ntreedata=" + pformat(self.treedata))
+        return ("|Tree|loaded=" + pformat(self.loaded) +
+                "\ntreedata=" + pformat(self.root_album))

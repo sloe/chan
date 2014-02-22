@@ -12,8 +12,8 @@ from sloeitem import SloeItem
 class SloeOutputUtil(object):
     def __init__(self, tree):
         self.tree = tree
-        glb_cfg = SloeConfig.get_global()
-        self.verbose = glb_cfg.get_option("verbose")
+        glb_cfg = SloeConfig.inst()
+        self.verbose = sloelib.SloeConfig.get_option("verbose")
 
 
     def _derive_outputdefs_recurse(self, indent, album):

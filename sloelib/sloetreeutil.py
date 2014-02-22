@@ -14,8 +14,8 @@ from sloetrees import SloeTrees
 class SloeTreeUtil(object):
     def __init__(self, tree):
         self.tree = tree
-        glb_cfg = SloeConfig.get_global()
-        self.verbose = glb_cfg.get_option("verbose")
+        glb_cfg = SloeConfig.inst()
+        self.verbose = sloelib.SloeConfig.get_option("verbose")
 
 
     def print_ls(self):

@@ -1,22 +1,33 @@
 
 import ConfigParser
+import datetime
 import logging
 import os
-import sys
 from pprint import pprint, pformat
+import sys
+import uuid
 
 from sloeerror import SloeError
 
 class SloeTreeNode(object):
     MANDATORY_ELEMENTS = []
 
-    def __init__(self, _type):
+    def __init__(self, _type, uuid_prefix = None):
         self._type = _type
+        self._uuid_prefix = uuid_prefix
         self._d =  {
             "parent_uuid": None,
             "type": _type
         }
 
+
+    def create_uuid(self):
+        new_uuid = str(uuid.uuid4())
+        if self._uuid_prefix:
+            new_uuid = self._uuid_prefix + new_uuid[len(self._uuid_prefix):]
+            
+        self._d["uuid"] = new_uuid
+        
 
     def get(self, name, default):
         node = object.__getattribute__(self, "_d")
@@ -27,7 +38,7 @@ class SloeTreeNode(object):
 
 
     def get_key(self):
-        return "%s-%s" % (self._d["type"], str(self._d["uuid"]))
+        return self._d["type"]
 
 
     def set_value(self, name, value):
@@ -43,8 +54,14 @@ class SloeTreeNode(object):
         if name in node:
             return node[name]
         else:
-            raise AttributeError(name)
-
+            raise AttributeError("%s '%s' (%s) has no element named '%s' (%s)" % (
+                self._d.get("type", "<unknown>"),
+                self._d.get("name", "<unknown>"),
+                self._d.get("uuid", "no UUID"),
+                name,
+                self._d.get("_location", "no location")
+                ))
+                                                 
 
     def create_from_ini_file(self, ini_filepath, error_info):
         with open(ini_filepath, "rb") as ini_fp:
@@ -88,21 +105,24 @@ class SloeTreeNode(object):
                     raise SloeError("illegal section name %s" %
                                     section)
             _d.update(override)
-            self.verify_file_data(_d)
+            self.verify_creation_data(_d)
         except SloeError, e:
             raise SloeError("%s (%s)" % (str(e), error_info))
 
         self._d.update(_d)
 
 
-    def verify_file_data(self, file_data):
+    def verify_creation_data(self, creation_data=None):
+        if creation_data is None:
+            creation_data = self._d
+        
         missing_elements = []
         for element in self.MANDATORY_ELEMENTS:
-            if element not in file_data:
+            if element not in creation_data:
                 missing_elements.append(element)
 
         if len(missing_elements) > 0:
-            raise SloeError("Missing elements %s in .ini file" % ", ".join(missing_elements))
+            raise SloeError("Missing elements %s when creating object" % ", ".join(missing_elements))
 
 
     def get_ini_leafname(self):
@@ -117,9 +137,25 @@ class SloeTreeNode(object):
         parser = ConfigParser.ConfigParser()
         section = self.get_key()
         parser.add_section(section)
-        for name, value in self._d.iteritems():
-            if not name.startswith("_"):
-                parser.set(section, name, '"%s"' % str(value))
+        mandatory_set = self.MANDATORY_ELEMENTS + ("parent_uuid", "type", "uuid")
+        mandatory = []
+        automatic = []
+        user = []
+        
+        for name in sorted(self._d.keys()):            
+            if name.startswith("_"):
+                pass # Don't write to output
+            elif name in mandatory_set:
+                mandatory.append(name)
+            elif name.startswith("auto_"):
+                automatic.append(name)
+            else:
+                user.append(name)
+                
+        for name in automatic + mandatory + user:
+            parser.set(section, name, '"%s"' % str(self._d[name]))
 
-        with open(self.get_ini_filepath(), "wb") as file:
-            parser.write(file)
+        with open(self.get_ini_filepath(), "wb") as fp:
+            fp.write("# File saved at %s\n\n" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'))
+            parser.write(fp)
+            

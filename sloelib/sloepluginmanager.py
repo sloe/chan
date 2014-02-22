@@ -26,9 +26,9 @@ class SloePlugInManager(object):
 
     
     def load_plugins(self):
-        glb_cfg = SloeConfig.get_global()
-        root = glb_cfg.get_option("script_dir")
-        plugin_dirs = glb_cfg.get("global", "plugindirs")
+        glb_cfg = SloeConfig.inst()
+        root = SloeConfig.get_option("script_dir")
+        plugin_dirs = glb_cfg.get_value("global", "plugindirs")
         for plugin_dir in plugin_dirs.split(os.path.pathsep):
             dir_path = os.path.join(root, plugin_dir)
             
@@ -79,7 +79,7 @@ class SloePlugInManager(object):
         methods = plugin.get("methods", None)
         method = methods.get(method_name, None)
         if not method:
-            raise SloeError("No method '%' in PlugIn '%s'" % (method_name, name))
+            raise SloeError("No method '%s' in PlugIn '%s'" % (method_name, name))
         
         obj = plugin.get("object", None)
         if obj is None:

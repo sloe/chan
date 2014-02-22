@@ -12,8 +12,8 @@ from sloegeneratecfg import SloeGenerateCfg
 class SloeApp:
 
     def get_global(self, name):
-        glb_cfg = sloelib.SloeConfig.get_global()
-        return glb_cfg.get("global", name)
+        glb_cfg = sloelib.SloeConfig.inst()
+        return glb_cfg.get_value("global", name)
 
 
     def enter(self):
@@ -48,10 +48,10 @@ class SloeApp:
         (self.options, self.args) = parser.parse_args()
         self.params = self.args[1:]
         logging.basicConfig(format="#%(levelname)s:%(filename)s::%(funcName)s#%(lineno)d at %(asctime)s\n%(message)s")
-        glb_cfg = sloelib.SloeConfig.get_global()
+        glb_cfg = sloelib.SloeConfig.inst()
         logging.info("Loading global config file config.cfg")
         glb_cfg.appendfile('config.cfg')
-        loglevelstr = glb_cfg.get("global", "loglevel")
+        loglevelstr = glb_cfg.get_value("global", "loglevel")
         if loglevelstr == 'DEBUG':
             self.loglevel = logging.DEBUG
         elif loglevelstr == 'INFO':
@@ -88,12 +88,12 @@ class SloeApp:
         session_w.get_session()
 
 
-    def dowork(self, *trees):
-        glb_cfg = sloelib.SloeConfig.get_global()
-        for tree_name in trees:
-            tree = sloelib.SloeTrees.inst().get_tree(tree_name)
+    def dowork(self, *subtrees):
+        glb_cfg = sloelib.SloeConfig.inst()
+        for subtree in subtrees:
+            tree = sloelib.SloeTrees.inst().get_tree()
             executor = sloelib.SloeLocalExec(tree)
-            work_manager = sloelib.SloeWorkManager(tree)
+            work_manager = sloelib.SloeWorkManager()
             work = work_manager.get_all_work(tree)
             sloelib.SloeExecUtil.do_work(executor, work)
 
@@ -107,31 +107,34 @@ class SloeApp:
 
 
     def generatecfg(self, *params):
-        handler = SloeGenerateCfg(self)
-        handler.enter(params)
+        sloelib.SloeTrees.inst().get_tree()
+        sloelib.SloePlugInManager.inst().call_plugin(
+            "generatecfg",
+            "command_generatecfg",
+            params=params)
 
 
-    def lstree(self, *trees):
-        glb_cfg = sloelib.SloeConfig.get_global()
-        for tree_name in trees:
-            tree = sloelib.SloeTrees.inst().get_tree(tree_name)
+    def lstree(self, *subtrees):
+        glb_cfg = sloelib.SloeConfig.inst()
+        for subtree in subtrees:
+            tree = sloelib.SloeTrees.inst().get_tree()
             treeutil = sloelib.SloeTreeUtil(tree)
             treeutil.print_ls()
 
 
-    def lsoutput(self, *trees):
-        glb_cfg = sloelib.SloeConfig.get_global()
-        for tree_name in trees:
-            tree = sloelib.SloeTrees.inst().get_tree(tree_name)
+    def lsoutput(self, *subtrees):
+        glb_cfg = sloelib.SloeConfig.inst()
+        for subtree in subtrees:
+            tree = sloelib.SloeTrees.inst().get_tree()
             outpututil = sloelib.SloeOutputUtil(tree)
             outputdefs = outpututil.derive_outputdefs()
             pprint(outputdefs)
 
 
-    def lswork(self, *trees):
-        glb_cfg = sloelib.SloeConfig.get_global()
-        for tree_name in trees:
-            tree = sloelib.SloeTrees.inst().get_tree(tree_name)
+    def lswork(self, *subtrees):
+        glb_cfg = sloelib.SloeConfig.inst()
+        for subtree in subtrees:
+            tree = sloelib.SloeTrees.inst().get_tree()
             work_manager = sloelib.SloeWorkManager(tree)
             work = work_manager.get_all_work(tree)
             pprint(work)
@@ -144,12 +147,12 @@ class SloeApp:
         tree.write()
 
 
-    def verifytree(self, *trees):
-        glb_cfg = sloelib.SloeConfig.get_global()
-        for tree_name in trees:
+    def verifytree(self, *subtrees):
+        glb_cfg = sloelib.SloeConfig.inst()
+        for subtree in subtrees:
             logging.debug("Beginning tree verification for %s" % tree_name)
-            tree = sloelib.SloeTrees.inst().get_tree(tree_name)
-            if (glb_cfg.get_option("dump")):
+            tree = sloelib.SloeTrees.inst().get_tree()
+            if (sloelib.SloeConfig.get_option("dump")):
                 pprint(tree)
 
 if __name__ == "__main__":

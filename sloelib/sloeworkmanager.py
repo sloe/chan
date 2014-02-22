@@ -11,13 +11,13 @@ from sloeerror import SloeError
 from sloeitem import SloeItem
 from sloeoutputspec import SloeOutputSpec
 from sloerenderjob import SloeRenderJob
+from sloetree import SloeTree
 from sloetreeutil import SloeTreeUtil
 
 
 class SloeWorkManager(object):
-    def __init__(self, tree):
-        self.tree = tree    
-
+    def __init__(self):
+        pass
 
     def get_work_for_item(self, album, item, outputspec):
         work = []
@@ -31,18 +31,19 @@ class SloeWorkManager(object):
             workspec = SloeRenderJob()
             workspec.set_values(
                 common_id=common_id,
-                leafname="+renderjob,%s" % common_id,       
-                uuid=str(uuid.uuid4())
+                leafname="+renderjob,%s" % common_id
             )
+            workspec.create_uuid()
+            workspec.verify_creation_data()
             work.append(workspec)
         
         return work
             
             
 
-    def get_all_work(self, tree):
+    def get_all_work(self, subtree):
         work = []
-        root_album = self.tree.get_root_album()
+        root_album = SloeTree.inst().root_album
         logging.debug("get_all_work in %s" % root_album.name)
         for subtree, album, items in SloeTreeUtil.walk_items(root_album):
             logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
