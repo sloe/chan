@@ -10,6 +10,7 @@ from sloeconfig import SloeConfig
 from sloeerror import SloeError
 from sloeitem import SloeItem
 from sloetree import SloeTree
+from sloetreeutil import SloeTreeUtil
 from sloevideoutil import SloeVideoUtil
 
 class SloeOutputUtil(object):
@@ -34,7 +35,7 @@ class SloeOutputUtil(object):
 
 
     @classmethod
-    def get_output_path(self, genspec, item, outputspec):
+    def get_output_subpath(cls, genspec, item, outputspec):
         output_path = outputspec.output_path
 
         replacements = {
@@ -53,8 +54,13 @@ class SloeOutputUtil(object):
             if name not in replacements:
                 raise SloeError("No substitution variable {%s} - options are %s" % (name, ",".join(replacements.keys())))
             output_path = match.group(1) + replacements[name] + match.group(3)
+    
+        return output_path
+    
                 
-        
+    @classmethod
+    def get_output_path(cls, genspec, item, outputspec):  
+        output_path = cls.get_output_subpath(genspec, item, outputspec)
         if not re.match(r'[\\/]', output_path) and not re.match(r'[A-Z]:[\\/]', output_path):
             output_path = os.path.join(SloeConfig.get_global("treeroot"), output_path)
             
@@ -63,21 +69,25 @@ class SloeOutputUtil(object):
     @classmethod
     def create_output_ini(cls, genspec, item, outputspec):
         current_tree = SloeTree.inst()
+        output_path = cls.get_output_subpath(genspec, item, outputspec)
+        dest_treelist = [outputspec.primacy, outputspec.worth] + item.subtree.split("/")
+        parent_album = SloeTreeUtil.find_or_create_derived_album(item.parent_uuid, dest_treelist)
+        
         common_id = "G=%s,I=%s,O=%s" % (genspec.uuid, item.uuid, outputspec.uuid)
         spec = {
             "common_id" : common_id,
-            "leafname" : os.path.basename(cls.get_output_path(genspec, item, outputspec)),
+            "leafname" : os.path.basename(output_path),
             "name" : item.name,
-            "parent_uuid" : item.parent_uuid,
             "primacy" : outputspec.primacy,
             "subtree" : item.subtree,
             "worth" : outputspec.worth
         }
         existing_item = current_tree.get_item_from_spec(spec)
-        logging.info("exisiting item=%s"% pformat(existing_item))
+        logging.info("existing item=%s"% pformat(existing_item))
         item = SloeItem()
         item.create_new(existing_item, spec)
         
         item.update(SloeVideoUtil.detect_video_params(item.get_file_path()))
+        parent_album.add_child_item(item)
         item.save_to_file()    
         

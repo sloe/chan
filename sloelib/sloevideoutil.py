@@ -23,7 +23,7 @@ class SloeVideoUtil(object):
         (json_out, stderr) = p.communicate()
         if p.returncode != 0:
             logging.error("ffprobe failed (rc=%d)\n%s" % (p.returncode, stderr))
-            raise sloelib.SloeError("ffprobe failed (rc-%d)" % p.returncode)
+            raise SloeError("ffprobe failed (rc-%d)" % p.returncode)
         ffinfo = json.loads(json_out)
         for stream in ffinfo["streams"]:
             if stream["codec_type"] == "video":

@@ -8,6 +8,7 @@ from sloealbum import SloeAlbum
 from sloeconfig import SloeConfig
 from sloeerror import SloeError
 from sloeitem import SloeItem
+from sloetree import SloeTree
 from sloetrees import SloeTrees
 
 
@@ -49,6 +50,15 @@ class SloeTreeUtil(object):
 
                 
     @classmethod 
+    def walk_albums(cls, album):
+        yield album
+        for subalbum in album.subalbums:
+            for x in cls.walk_albums(subalbum):
+                yield x
+                
+                
+                
+    @classmethod 
     def walk_items(cls, album, subtree=[]):
         new_subtree = subtree + [album.name]
         
@@ -57,7 +67,7 @@ class SloeTreeUtil(object):
             for x in cls.walk_items(subalbum, new_subtree):
                 yield x
                 
-                
+                        
     @classmethod
     def walk_parents(cls, album):
         parent_album = SloeTrees.inst().find_album_or_none(album.parent_uuid)
@@ -115,5 +125,65 @@ class SloeTreeUtil(object):
         raise SloeError("OutputSpec not found for %s" % obj_uuid)
     
 
+    @classmethod
+    def find_album_by_uuid(cls, uuid):
+        for album in SloeTreeUtil.walk_albums(SloeTree.inst().get_root_album()):
+            if album.uuid == uuid:
+                return album
+            
+        return None
 
+
+    @classmethod
+    def find_album_by_spec(cls, spec):
+        for album in SloeTreeUtil.walk_albums(SloeTree.inst().get_root_album()):
+            found = True
+            for k, v in spec.iteritems():
+                if album.get(k, None) != v:
+                    found = False
+                    break
+                
+            if found:    
+                return album
+            
+        return None
+
+
+
+    @classmethod
+    def find_or_create_derived_album(cls, source_album_uuid, dest_treelist):
+        source_album = cls.find_album_by_uuid(source_album_uuid)
+        if source_album is None:
+            raise SloeError("Parent album cannot be found for item %s" % source_album_uuid)
+        findspec = {
+            "source_album_uuid" : source_album.uuid
+        }
+        if len(dest_treelist) == 0:
+            # Reached the top of the subtree, so return the top-level album
+            toplevel_album = SloeTree.inst().get_root_album()
+            if len(toplevel_album.subalbums) > 0:
+                toplevel_album = toplevel_album.subalbums[0]
+            return toplevel_album
+        if len(dest_treelist) >= 1:
+            findspec["primacy"] = dest_treelist[0]
+        if len(dest_treelist) >= 2:
+            findspec["worth"] = dest_treelist[1]
+        if len(dest_treelist) >= 3:
+            findspec["subtree"] = "/".join(dest_treelist[2:])
+                                            
+        found_album = cls.find_album_by_spec(findspec)
+        if found_album:
+            logging.info("Found matching album %s" % found_album.uuid)
+            return found_album
+        
+        # Create album, recursing to create its parents if necessary
+        dest_parent = cls.find_or_create_derived_album(source_album.parent_uuid, dest_treelist[:-1])
+        
+        dest_path = os.path.join(SloeConfig.get_global("treeroot"), *dest_treelist)
+        new_album = SloeAlbum()
+        new_album.create_new(source_album.name, dest_path)
+        new_album.update(findspec) 
+        dest_parent.add_child_album(new_album)
+        new_album.save_to_file()        
+        return new_album
     
