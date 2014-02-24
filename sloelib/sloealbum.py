@@ -63,7 +63,7 @@ class SloeAlbum(SloeTreeNode):
 
         self._d.update({
             "name" : name,
-            "_save_dir" : full_path,
+            "_location" : full_path,
             "title" : title
         })
         self.create_uuid()
@@ -108,7 +108,7 @@ class SloeAlbum(SloeTreeNode):
 
 
     def add_child_album(self, obj):
-        obj.set_value("parent_uuid", self.uuid)
+        obj.set_value("_parent_album_uuid", self.uuid)
         self.subalbum_dict[obj.uuid] = obj
         self._album_names_to_uuids[obj.name] = obj.uuid
         return obj
@@ -116,17 +116,17 @@ class SloeAlbum(SloeTreeNode):
 
     def add_child_genspec(self, obj):
         self.genspec_dict[obj.uuid] = obj
-        obj.set_value("parent_uuid", self._d["uuid"])
+        obj.set_value("_parent_album_uuid", self._d["uuid"])
 
 
     def add_child_item(self, obj):
         self.item_dict[obj.uuid] = obj
-        obj.set_value("parent_uuid", self._d["uuid"])
+        obj.set_value("_parent_album_uuid", self._d["uuid"])
 
 
     def add_child_outputspec(self, obj):
         self.outputspec_dict[obj.uuid] = obj
-        obj.set_value("parent_uuid", self._d["uuid"])
+        obj.set_value("_parent_album_uuid", self._d["uuid"])
 
 
     def __repr__(self):

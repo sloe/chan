@@ -24,7 +24,7 @@ class SloeWorkManager(object):
         work = []
         add_workspec = False
         glob_include = outputspec.get("glob_include", None)
-        if fnmatch.fnmatch(item.leafname, glob_include)  and item.primacy == "primary":
+        if fnmatch.fnmatch(item.leafname, glob_include)  and item._primacy == "primary":
             add_workspec = True
             
         if add_workspec:

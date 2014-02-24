@@ -29,10 +29,10 @@ class SloeTree:
         
     def reset(self):
         self.root_album = SloeAlbum()
-        self.root_album.set_value("_location", "root")
-        self.root_album.set_value("name", "root")
+        self.root_album.set_value("_location", "{root}")
+        self.root_album.set_value("name", "{root}")
         self.root_album.set_value("title", "")
-        self.root_album.set_value("uuid", "1a26ed39-1ea6-487d-8c3a-dfbc71d8df4a")
+        self.root_album.set_value("uuid", "0226ed39-1ea6-487d-8c3a-dfbc71d8df4a")
 
     
     @classmethod
@@ -67,7 +67,7 @@ class SloeTree:
         def test(item):
             return (
                 item.get("common_id", None) == spec.get("common_id", None) and
-                item.subtree == spec["subtree"] and
+                item._subtree == spec["_subtree"] and
                 item.name == spec["name"])
         return self.find_in_tree(test)
 
@@ -181,15 +181,6 @@ class SloeTree:
         full_path = os.path.join(subdir_path, subtree, filename)
         item = SloeItem.new_from_ini_file(full_path, "SloeTree.add_item_from_ini: " + full_path)
 
-        # Verification
-        if primacy != item.get("primacy", ""):
-            raise SloeError("primacy mismatch %s != %s in %s" %
-                            (primacy, item.get("primacy", "(missing)"), full_path))
-        # Don't verify worth - can be changed by moving files
-        if subtree != item.subtree:
-            raise SloeError("subtree mismatch %s != %s in %s" %
-                            (subtree, item.subtree, full_path))
-
         if item.uuid != filename_uuid: # Both are strings
             raise SloeError("filename/content uuid mismatch %s != %s in %s" %
                             (item.uuid, filename_uuid, full_path))
@@ -202,12 +193,6 @@ class SloeTree:
         else:
             logging.warning("Missing file %s" % target_path)
 
-
-        parent_uuid = item.get("parent_uuid", None)
-        if parent_uuid is not None:
-            dest_album = self.find_album_or_none(parent_uuid)
-            if dest_album:
-                logging.info("Found parent album for %s" % full_path)
                 
             
         if dest_album is not None:

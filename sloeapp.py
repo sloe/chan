@@ -72,13 +72,23 @@ class SloeApp:
         if len(self.args) == 0:
             parser.error("Please supply a command argument")
         else:
-            valid_commands = ("auth", "dowork", "dumptree", "generatecfg", "lstree", "lsoutput", "lswork", "sync", "verifytree")
             command = self.args[0]
-            if command not in valid_commands:
-                parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
-
-            logging.info("Command: %s" % " ".join(self.args))
-            getattr(self, command)(*self.args[1:])
+            plugin_commands = sloelib.SloePlugInManager.inst().commands
+            if command in plugin_commands.keys():
+                    
+                command_spec = plugin_commands[command]
+                sloelib.SloePlugInManager.inst().call_plugin(
+                    command_spec["plugin"],
+                    command_spec["method"],
+                    params=self.args[1:],
+                    options=self.options)                
+            else:        
+                valid_commands = ["auth", "dumptree", "lsoutput", "lswork", "sync", "verifytree"] + plugin_commands.keys()
+                if command not in valid_commands:
+                    parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
+    
+                logging.info("Command: %s" % " ".join(self.args))
+                getattr(self, command)(*self.args[1:])
 
 
     def auth(self):
@@ -112,14 +122,6 @@ class SloeApp:
             "generatecfg",
             "command_generatecfg",
             params=params)
-
-
-    def lstree(self, *subtrees):
-        glb_cfg = sloelib.SloeConfig.inst()
-        for subtree in subtrees:
-            tree = sloelib.SloeTrees.inst().get_tree()
-            treeutil = sloelib.SloeTreeUtil(tree)
-            treeutil.print_ls()
 
 
     def lsoutput(self, *subtrees):

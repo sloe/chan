@@ -11,7 +11,7 @@ from sloetreenode import SloeTreeNode
 
 
 class SloeItem(SloeTreeNode):
-    MANDATORY_ELEMENTS = ("leafname", "name", "primacy", "subtree", "worth")
+    MANDATORY_ELEMENTS = ("leafname", "name")
 
     def __init__(self):
         SloeTreeNode.__init__(self, "item", "01")
@@ -46,7 +46,7 @@ class SloeItem(SloeTreeNode):
 
     def get_file_dir(self):
         root_dir = SloeConfig.inst().get_global("treeroot")
-        return os.path.join(root_dir, self._d["primacy"], self._d["worth"], self._d["subtree"])
+        return os.path.join(root_dir, self._d["_primacy"], self._d["_worth"], self._d["_subtree"])
 
 
     def get_file_path(self):

@@ -16,37 +16,7 @@ class SloeTreeUtil(object):
     def __init__(self, tree):
         self.tree = tree
         glb_cfg = SloeConfig.inst()
-        self.verbose = sloelib.SloeConfig.get_option("verbose")
-
-
-    def print_ls(self):
-        root_album = self.tree.get_root_album()
-        for subtree, album, items in self.walk_items(root_album):
-            indent = "  " * subtree.count("/")
-            try:
-                print "%s%sAlbum: %s '%s' (%s)" % (album.uuid, indent, album.name, album.title, album._location.replace("\\", "/"))
-                if self.verbose:
-                    pprint(album._d)
-                for item in items:
-                    item_spec = ("%sx%s %sFPS %.2fs %.1fMB" %
-                                 (item.video_width, item.video_height, item.video_avg_frame_rate, float(item.video_duration), float(item.video_size) / 2**20))
-                    print "%s%s %s (%s %s)" % (item.uuid, indent, item.name, os.path.splitext(item.leafname)[1], item_spec)
-                    if self.verbose:
-                        pprint(item._d)
-    
-                for obj in album.genspecs:
-                    print "%s%sGenSpec: %s" % (obj.uuid, indent, obj.name)
-                    if self.verbose:
-                        pprint(obj._d)
-    
-                for obj in album.outputspecs:
-                    print "%s%sOutputSpec: %s" % (obj.uuid, indent, obj.name)
-                    if self.verbose:
-                        pprint(obj._d)
-    
-            except Exception, e:
-                logging.error("Missing attribute for %s" % album.name)
-                raise e
+        self.verbose = SloeConfig.get_option("verbose")
 
                 
     @classmethod 
@@ -59,10 +29,10 @@ class SloeTreeUtil(object):
                 
                 
     @classmethod 
-    def walk_items(cls, album, subtree=[]):
+    def walk_items(cls, album, subtree=[]):   
         new_subtree = subtree + [album.name]
-        
         yield ("/".join(new_subtree), album, album.items)
+            
         for subalbum in album.subalbums:
             for x in cls.walk_items(subalbum, new_subtree):
                 yield x
@@ -70,10 +40,12 @@ class SloeTreeUtil(object):
                         
     @classmethod
     def walk_parents(cls, album):
-        parent_album = SloeTrees.inst().find_album_or_none(album.parent_uuid)
-        if parent_album:
-            for x in cls.walk_parents(parent_album):
-                yield x
+        parent_uuid = album.get("_parent_album_uuid", None)
+        if parent_uuid:
+            parent_album = SloeTrees.inst().find_album_or_none(parent_uuid)
+            if parent_album:
+                for x in cls.walk_parents(parent_album):
+                    yield x
         yield album
         
 
@@ -165,11 +137,11 @@ class SloeTreeUtil(object):
                 toplevel_album = toplevel_album.subalbums[0]
             return toplevel_album
         if len(dest_treelist) >= 1:
-            findspec["primacy"] = dest_treelist[0]
+            findspec["_primacy"] = dest_treelist[0]
         if len(dest_treelist) >= 2:
-            findspec["worth"] = dest_treelist[1]
+            findspec["_worth"] = dest_treelist[1]
         if len(dest_treelist) >= 3:
-            findspec["subtree"] = "/".join(dest_treelist[2:])
+            findspec["_subtree"] = "/".join(dest_treelist[2:])
                                             
         found_album = cls.find_album_by_spec(findspec)
         if found_album:
@@ -177,7 +149,7 @@ class SloeTreeUtil(object):
             return found_album
         
         # Create album, recursing to create its parents if necessary
-        dest_parent = cls.find_or_create_derived_album(source_album.parent_uuid, dest_treelist[:-1])
+        dest_parent = cls.find_or_create_derived_album(source_album._parent_album_uuid, dest_treelist[:-1])
         
         dest_path = os.path.join(SloeConfig.get_global("treeroot"), *dest_treelist)
         new_album = SloeAlbum()

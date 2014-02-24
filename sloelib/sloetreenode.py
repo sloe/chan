@@ -7,6 +7,7 @@ from pprint import pprint, pformat
 import sys
 import uuid
 
+from sloeconfig import SloeConfig
 from sloeerror import SloeError
 
 class SloeTreeNode(object):
@@ -16,7 +17,6 @@ class SloeTreeNode(object):
         self._type = _type
         self._uuid_prefix = uuid_prefix
         self._d =  {
-            "parent_uuid": None,
             "type": _type
         }
 
@@ -74,7 +74,20 @@ class SloeTreeNode(object):
     def create_from_ini_file(self, ini_filepath, error_info):
         with open(ini_filepath, "rb") as ini_fp:
             self.create_from_ini_fp(ini_fp, error_info)
-            self._d["_location"] = os.path.dirname(ini_filepath)
+            
+        self._d["_location"] = os.path.dirname(ini_filepath)
+        rel_path = os.path.relpath(
+            os.path.dirname(ini_filepath),
+            SloeConfig.get_global("treeroot"))
+        rel_path = rel_path.replace("\\", "/")
+        rel_split = rel_path.split("/")
+        if len(rel_split) >= 1:
+            self._d["_primacy"] = rel_split[0]
+        if len(rel_split) >= 2:
+            self._d["_worth"] = rel_split[1]
+        if len(rel_split) >= 3:
+            self._d["_subtree"] = "/".join(rel_split[2:])
+        pass
 
 
     def create_from_ini_fp(self, ini_fp, error_info):
@@ -91,7 +104,6 @@ class SloeTreeNode(object):
                     value = value[1:-1]
                 file_data[section][item_name] = value
         _d = {}
-        override = {}
         in_file_uuid = None
         try:
             for section, v in file_data.iteritems():
@@ -102,9 +114,7 @@ class SloeTreeNode(object):
             section_with_uuid = "%s-%s" % (self._type, in_file_uuid or "NONE")
 
             for section, v in file_data.iteritems():
-                if section == "override":
-                    override = v
-                elif section == "auto" or section == self._type or section == section_with_uuid:
+                if section == self._type or section == section_with_uuid:
                     _d.update(v)
                 elif section.startswith(self._type):
                     raise SloeError("in-file section/uuid mismatch %s != %s" %
@@ -112,7 +122,6 @@ class SloeTreeNode(object):
                 else:
                     raise SloeError("illegal section name %s" %
                                     section)
-            _d.update(override)
             self.verify_creation_data(_d)
         except SloeError, e:
             raise SloeError("%s (%s)" % (str(e), error_info))
@@ -138,14 +147,14 @@ class SloeTreeNode(object):
 
 
     def get_ini_filepath(self):
-        return os.path.join(self._d["_save_dir"], self.get_ini_leafname());
+        return os.path.join(self._d["_location"], self.get_ini_leafname());
 
 
     def save_to_file(self):
         parser = ConfigParser.ConfigParser()
         section = self.get_key()
         parser.add_section(section)
-        mandatory_set = self.MANDATORY_ELEMENTS + ("parent_uuid", "type", "uuid")
+        mandatory_set = self.MANDATORY_ELEMENTS + ("type", "uuid")
         mandatory = []
         automatic = []
         user = []

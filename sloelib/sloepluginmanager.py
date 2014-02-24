@@ -16,6 +16,7 @@ class SloePlugInManager(object):
     instance = None
     def __init__(self):
         self.plugins = {}
+        self.commands = {}
         
         
     @classmethod
@@ -70,6 +71,13 @@ class SloePlugInManager(object):
             raise SloeError("Plugin '%s' does not define methods" % name)
                     
         self.plugins[name] = spec
+        
+        for method in spec["methods"].keys():
+            if method.startswith("command_"):
+                self.commands[method[8:]] = {
+                "plugin" : name,
+                "method" : method}
+            
         
         
     def call_plugin(self, name, method_name, *args, **keywords):

@@ -12,7 +12,7 @@ import sloelib
 
 class SloePluginGenerateConfig(object):
    
-    def command_generatecfg(self, params):
+    def command_generatecfg(self, params, options):
         for subtree in params:    
             self.process_tree(subtree)
 
@@ -49,9 +49,9 @@ class SloePluginGenerateConfig(object):
                         spec = {
                             "leafname" : filename,
                             "name" : match.group(1),
-                            "primacy" : primacy,
-                            "subtree" : string.replace(os.path.relpath(dirpath, subtree_root), "\\", "/"),
-                            "worth" : worth
+                            "_primacy" : primacy,
+                            "_subtree" : string.replace(os.path.relpath(dirpath, subtree_root), "\\", "/"),
+                            "_worth" : worth
                         }
                         self.process_file(spec)
 
@@ -92,7 +92,7 @@ class SloePluginGenerateConfig(object):
             album.create_new(name, full_path)
             if parent_uuid is not None:
                 logging.info("Found parent album for %s in %s UUID %s" % (full_path, parent_dir, parent_uuid))     
-                album.set_value("parent_uuid", parent_uuid)            
+                album.set_value("_parent_album_uuid", parent_uuid)            
             if not sloelib.SloeConfig.get_option("dryrun"):
                 album.save_to_file()
 

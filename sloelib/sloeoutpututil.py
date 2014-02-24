@@ -43,7 +43,7 @@ class SloeOutputUtil(object):
             "ext" : genspec.output_extension,
             "suffix" : genspec.output_suffix,
             "name" : item.name,
-            "subtree" : item.subtree,
+            "subtree" : item._subtree,
             }
         
         while True:
@@ -66,21 +66,23 @@ class SloeOutputUtil(object):
             
         return output_path
     
+    
     @classmethod
     def create_output_ini(cls, genspec, item, outputspec):
         current_tree = SloeTree.inst()
-        output_path = cls.get_output_subpath(genspec, item, outputspec)
-        dest_treelist = [outputspec.primacy, outputspec.worth] + item.subtree.split("/")
-        parent_album = SloeTreeUtil.find_or_create_derived_album(item.parent_uuid, dest_treelist)
+        output_subpath = cls.get_output_subpath(genspec, item, outputspec)
+        dest_treelist = output_subpath.split("/")[:-1]
+        parent_album = SloeTreeUtil.find_or_create_derived_album(item._parent_album_uuid, dest_treelist)
         
         common_id = "G=%s,I=%s,O=%s" % (genspec.uuid, item.uuid, outputspec.uuid)
         spec = {
+            "_primacy" : dest_treelist[0],
+            "_worth" : dest_treelist[1],
+            "_subtree" : "/".join(dest_treelist[2:]),
+                                    
             "common_id" : common_id,
-            "leafname" : os.path.basename(output_path),
+            "leafname" : os.path.basename(output_subpath),
             "name" : item.name,
-            "primacy" : outputspec.primacy,
-            "subtree" : item.subtree,
-            "worth" : outputspec.worth
         }
         existing_item = current_tree.get_item_from_spec(spec)
         logging.info("existing item=%s"% pformat(existing_item))
