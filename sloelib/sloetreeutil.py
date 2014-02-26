@@ -52,8 +52,8 @@ class SloeTreeUtil(object):
     @classmethod 
     def get_parent_outputspecs(cls, album):
         outputspecs = []
-        for album in cls.walk_parents(album):
-            outputspecs += album.outputspecs
+        for parent_album in cls.walk_parents(album):
+            outputspecs += parent_album.outputspecs
 
         return outputspecs
     
@@ -85,6 +85,16 @@ class SloeTreeUtil(object):
                     return obj
                     
         raise SloeError("Item not found for %s" % obj_uuid)
+
+      
+    @classmethod 
+    def find_album_and_item(cls, item_uuid):
+        for album in cls.walk_albums(SloeTree.inst().root_album):
+            item = album.item_dict.get(item_uuid)
+            if item:
+                return (album, item)
+
+        raise SloeError("Item not found for %s" % item_uuid)      
         
         
     @classmethod 

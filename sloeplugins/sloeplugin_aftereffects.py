@@ -88,15 +88,24 @@ class SloePluginAfterEffects(object):
          
         conformed_frame_rate = sloelib.SloeUtil.get_canonical_frame_rate(item.video_avg_frame_rate)
         
-        input_to_output_frame_factor = (float(genspec.output_frame_rate) /
+        output_to_input_frame_factor = (float(genspec.output_frame_rate) /
             (float(conformed_frame_rate) * sloelib.SloeUtil.fraction_to_float(genspec.speed_factor)))
         # Use math.trunc to round down, so when speeding up (speed_factor > 1) we don't generate
         # frames after the input source has run out
-        last_frame = math.trunc(float(item.video_nb_frames) * input_to_output_frame_factor)
+        last_frame = math.trunc(float(item.video_nb_frames) * output_to_input_frame_factor)
             
         # After Effects numbers frames from zero, so the last frame is one less than the number of frames
-        if last_frame > 0:
+
+        if output_to_input_frame_factor < 1:
             last_frame -= 1
+        else:
+            # When slowing down, Twitor will 'reach out' to the next frame to blend it, which, as the
+            # frame beyond the last inout frame is blank, darkens the image.  This correction stops
+            # the render just before that happens
+            last_frame -= output_to_input_frame_factor
+
+        if last_frame < 1:
+            last_frame = 1
             
         sandbox_output_path = sandbox.get_sandbox_path(genspec.aftereffects_outputfilename)
             

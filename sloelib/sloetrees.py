@@ -10,7 +10,7 @@ class SloeTrees:
     instance = None
 
     def __init__(self):
-        self.tree = None
+        self.tree = SloeTree.inst()
 
     @classmethod
     def inst(cls):

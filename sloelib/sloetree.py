@@ -139,12 +139,12 @@ class SloeTree:
                 if match:
                     name = match.group(1)
                     filename_uuid = match.group(2)
-                    self.add_genspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, parent_album)
+                    self.add_genspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)
                 match = self.outputspec_ini_regex.match(filename)
                 if match:
                     name = match.group(1)
                     filename_uuid = match.group(2)
-                    self.add_outputspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, parent_album)          
+                    self.add_outputspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)          
 
             parent_album = album_found
         return album_found

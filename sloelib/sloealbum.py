@@ -129,7 +129,7 @@ class SloeAlbum(SloeTreeNode):
         obj.set_value("_parent_album_uuid", self._d["uuid"])
 
 
-    def __repr__(self):
-        return "|Album|ALBUMS=" + pformat(self.subalbum_dict) + "\nITEMS=" + pformat(self.item_dict)
+#    def __repr__(self):
+#        return "|Album|ALBUMS=" + pformat(self.subalbum_dict) + "\nITEMS=" + pformat(self.item_dict)
 
 

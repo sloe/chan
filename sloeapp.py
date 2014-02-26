@@ -83,7 +83,7 @@ class SloeApp:
                     params=self.args[1:],
                     options=self.options)                
             else:        
-                valid_commands = ["auth", "dumptree", "lsoutput", "lswork", "sync", "verifytree"] + plugin_commands.keys()
+                valid_commands = ["auth", "dumptree", "lsoutput", "sync", "verifytree"] + plugin_commands.keys()
                 if command not in valid_commands:
                     parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
     
@@ -131,15 +131,6 @@ class SloeApp:
             outpututil = sloelib.SloeOutputUtil(tree)
             outputdefs = outpututil.derive_outputdefs()
             pprint(outputdefs)
-
-
-    def lswork(self, *subtrees):
-        glb_cfg = sloelib.SloeConfig.inst()
-        for subtree in subtrees:
-            tree = sloelib.SloeTrees.inst().get_tree()
-            work_manager = sloelib.SloeWorkManager(tree)
-            work = work_manager.get_all_work(tree)
-            pprint(work)
 
 
     def sync(self):
