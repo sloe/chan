@@ -5,7 +5,7 @@ import os
 from pprint import pprint
 import sys
 import sloelib
-import sloeyoutube
+from sloeplugins import *
 
 from sloegeneratecfg import SloeGenerateCfg
 
@@ -65,9 +65,7 @@ class SloeApp:
         logging.getLogger().setLevel(self.loglevel)
 
         glb_cfg.set_options(self.options)
-
-        # Load plugins once config is ready
-        sloelib.SloePlugInManager.inst().load_plugins()
+            
 
         if len(self.args) == 0:
             parser.error("Please supply a command argument")
@@ -83,19 +81,12 @@ class SloeApp:
                     params=self.args[1:],
                     options=self.options)                
             else:        
-                valid_commands = ["auth", "dumptree", "lsoutput", "sync", "verifytree"] + plugin_commands.keys()
+                valid_commands = ["lsoutput", "sync", "verifytree"] + plugin_commands.keys()
                 if command not in valid_commands:
                     parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
     
                 logging.info("Command: %s" % " ".join(self.args))
                 getattr(self, command)(*self.args[1:])
-
-
-    def auth(self):
-        session_r = sloeyoutube.SloeYouTubeSession("r")
-        session_r.get_session()
-        session_w = sloeyoutube.SloeYouTubeSession("w")
-        session_w.get_session()
 
 
     def dowork(self, *subtrees):
@@ -106,15 +97,6 @@ class SloeApp:
             work_manager = sloelib.SloeWorkManager()
             work = work_manager.get_all_work(tree)
             sloelib.SloeExecUtil.do_work(executor, work)
-
-
-
-    def dumptree(self):
-        session_r = sloeyoutube.SloeYouTubeSession("r")
-        tree = sloeyoutube.SloeYouTubeTree(session_r)
-        tree.read()
-        print tree
-
 
     def generatecfg(self, *params):
         sloelib.SloeTrees.inst().get_tree()

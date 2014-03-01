@@ -3,7 +3,7 @@
 import cPickle
 import logging
 import os
-import pprint
+from pprint import pformat, pprint
 import time
 
 import sloelib

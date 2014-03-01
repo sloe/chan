@@ -23,42 +23,7 @@ class SloePlugInManager(object):
     def inst(cls):
         if cls.instance is None:
             cls.instance = SloePlugInManager()
-        return cls.instance        
-
-    
-    def load_plugins(self):
-        glb_cfg = SloeConfig.inst()
-        root = SloeConfig.get_option("script_dir")
-        plugin_dirs = glb_cfg.get_value("global", "plugindirs")
-        for plugin_dir in plugin_dirs.split(os.path.pathsep):
-            dir_path = os.path.join(root, plugin_dir)
-            
-            if not os.path.isdir(dir_path):
-                logging.warn("Cannot open configured plugin directory %s" % dir_path)
-            else:
-                for root, dirs, filenames in os.walk(dir_path):
-                    for filename in filenames:
-                        match =  re.match(r'(sloeplugin_)([^/]+)\.py$', filename)
-                        if match:
-                            name = "".join(match.group(1, 2))
-                            short_name = match.group(2)
-                            file_obj = None
-                            try:
-                                try:
-                                    # Import using variable as module name
-                                    (file_obj, import_path, description) = imp.find_module(name, [root])
-                                    imp.load_module(name, file_obj, import_path, description)
-                                    logging.info("Loaded plugin '%s'" % short_name)
-                                except Exception, e:
-                                    try:
-                                        logging.error("".join(traceback.format_tb(sys.exc_info()[2])))
-                                    except:
-                                        pass
-                                    logging.error("Plugin '%s' failed to load: %s" % (name, str(e)))
-
-                            finally:
-                                if file_obj is not None:
-                                    file_obj.close()
+        return cls.instance
             
             
     def register_plugin(self, name, spec):

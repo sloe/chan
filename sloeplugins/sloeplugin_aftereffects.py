@@ -12,9 +12,9 @@ import sloelib
 
 class SloePluginAfterEffects(object):
     def __init__(self):
-        self.aerender = self.derive_aerender_path()
-        
-        
+        self.aerender = None
+    
+    
     def derive_aerender_path(self):
         for path in self.path_list():
             if os.path.isfile(path):
@@ -64,6 +64,8 @@ class SloePluginAfterEffects(object):
         
     def do_render_to_path(self, genspec, item, outputspec, final_output_path):
         logging.info("Performing render job for '%s'" % item.name)
+        if self.aerender is None:
+            self.derive_aerender_path()
         if self.aerender is None:
             raise sloelib.SloeError("Unable to render - cannot find aerender.exe") 
             

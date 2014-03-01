@@ -69,7 +69,7 @@ class SloeTreeUtil(object):
                 elif not element == obj_path[0]:
                     result = False
                     
-                if negate and result or (not negate and not result):
+                if (negate and result) or (not negate and not result):
                     # Selector has failed, so record and exit
                     selector_is_match = False
                     break
