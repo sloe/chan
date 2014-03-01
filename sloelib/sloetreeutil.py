@@ -1,4 +1,5 @@
 
+import fnmatch
 import logging
 import os
 from pprint import pformat, pprint
@@ -61,12 +62,7 @@ class SloeTreeUtil(object):
                     obj_path = obj_path[-2:]                    
                 elif element == "**":
                     obj_path = obj_path[1:]
-                elif element == "*":
-                    pass
-                elif element.endswith("*"):
-                    if not obj_path[0].startswith(element[:-1]):
-                        result = False
-                elif not element == obj_path[0]:
+                elif not fnmatch.fnmatch(obj_path[0], element):
                     result = False
                     
                 if (negate and result) or (not negate and not result):
