@@ -9,7 +9,7 @@ from sloeerror import SloeError
 from sloetreenode import SloeTreeNode
 
 class SloeOutputSpec(SloeTreeNode):
-    MANDATORY_ELEMENTS = ("name", "output_path", "uuid")
+    MANDATORY_ELEMENTS = ("name", "output_path", "priority", "uuid")
     def __init__(self):
         SloeTreeNode.__init__(self, "outputspec", "04")
 
@@ -17,6 +17,7 @@ class SloeOutputSpec(SloeTreeNode):
     def new_from_ini_file(cls, ini_filepath, error_info):
         outputspec = SloeOutputSpec()
         outputspec.create_from_ini_file(ini_filepath, error_info)
+        outputspec.priority = float(outputspec.priority)
         return outputspec
 
     def __repr__(self):

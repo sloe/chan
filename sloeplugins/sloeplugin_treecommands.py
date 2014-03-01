@@ -52,13 +52,15 @@ class SloePluginTreeCommands(object):
         tree = sloelib.SloeTree.inst()
         tree.load()   
         work_manager = sloelib.SloeWorkManager()
-        work = work_manager.get_all_work(tree.root_album)
+        (work, stats) = work_manager.get_all_work(tree.root_album)
         for job in work:
             extracted = sloelib.SloeExecUtil.extract_common_id(job.common_id)
             item_uuid = extracted["I"]
             album, item = sloelib.SloeTreeUtil.find_album_and_item(item_uuid)
-            print "Render item '%s/%s' using outputspec %s" % (item._subtree, item.name, extracted["O"])
+            print "Render item pri=%.0f '%s/%s' using outputspec %s" % (job.priority, item._subtree, item.name, extracted["O"])
             
+        print "Work items to do = %d, already done = %d" % (stats["todo"], stats["done"])
+   
    
     def process_obj(self, obj):
         for k in ("primacy", "worth", "subtree"):

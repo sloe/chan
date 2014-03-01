@@ -1,0 +1,15 @@
+
+INSTALL file for https://github.com/sloe/chan
+
+INSTALLATION
+============
+
+The tested software set is:
+
+Adobe After Effects CS5.5 (commercial)
+Twixtor 5.0.4 (commercial)
+Python 2.7.6 64-bit (from python.org, not ActiveState)
+Python pip (via get-pip.py, http://www.pip-installer.org/en/latest/installing.html)
+Python pywin32-218.5.win-amd64-py2.7 (http://www.lfd.uci.edu/~gohlke/pythonlibs/#pywin32)
+Python httplib2 (via pip install httplib2)
+Google APIs Client Library for Python (via pip install --upgrade google-api-python-client)

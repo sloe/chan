@@ -49,6 +49,17 @@ class SloeTreeUtil(object):
         yield album
         
 
+    @classmethod
+    def get_genspec_uuid_for_outputspec(cls, outputspec):
+        genspec_uuid = outputspec.get("genspec_uuid", None)
+        if genspec_uuid is None:
+            genspec_name = outputspec.get("genspec_name", None)
+            if not genspec_name:
+                raise SloeError("OutputSpec %s '%s' missing both genspec_name and genspec_uuid" % (outputspec.uuid, outputspec.name))
+            genspec_uuid = SloeTreeUtil.find_genspec_uuid_by_name(SloeTree.inst().root_album, genspec_name)    
+        return genspec_uuid
+    
+        
     @classmethod 
     def get_parent_outputspecs(cls, album):
         outputspecs = []
@@ -60,7 +71,7 @@ class SloeTreeUtil(object):
     
     @classmethod 
     def find_genspec_uuid_by_name(cls, album, genspec_name):
-        for album in SloeTreeUtil.walk_parents(album):
+        for album in SloeTreeUtil.walk_albums(album):
             for obj in album.genspecs:
                 if obj.name == genspec_name:
                     return obj.uuid
@@ -130,6 +141,23 @@ class SloeTreeUtil(object):
             
         return None
 
+
+    @classmethod
+    def find_item_by_spec(cls, spec):
+        for subtree, album, items in SloeTreeUtil.walk_items(SloeTree.inst().get_root_album()):
+            
+            for item in items:
+                found = True
+                
+                for k, v in spec.iteritems():
+                    if item.get(k, None) != v:
+                        found = False
+                        break
+                    
+                if found:    
+                    return item
+            
+        return None
 
 
     @classmethod
