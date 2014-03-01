@@ -63,12 +63,12 @@ class SloeWorkManager(object):
             
             
 
-    def get_all_work(self, subtree):
+    def get_all_work(self, selectors):
         work = []
         stats = {
             "todo" : 0,
             "done" : 0
-        }        
+        }
         root_album = SloeTree.inst().root_album
         logging.debug("get_all_work in %s" % root_album.name)
         for subtree, album, items in SloeTreeUtil.walk_items(root_album):
@@ -78,11 +78,12 @@ class SloeWorkManager(object):
                 logging.debug("%s Scanning with OutputSpec: %s" % (outputspec.uuid, outputspec.name))
 
                 for item in items:
-                    (work_for_item, stats_for_item) = self.get_work_for_item(album, item, outputspec)
-                    work += work_for_item
-                    
-                    for k in stats.keys():
-                        stats[k] += stats_for_item[k]
+                    if SloeTreeUtil.object_matches_selector(item, selectors):
+                        (work_for_item, stats_for_item) = self.get_work_for_item(album, item, outputspec)
+                        work += work_for_item
+                        
+                        for k in stats.keys():
+                            stats[k] += stats_for_item[k]
                         
         sorted_work = reversed(sorted(work, key=lambda x: x.get("priority", 0.0)))
         logging.debug("get_all_work done")

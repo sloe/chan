@@ -13,36 +13,60 @@ class SloePluginTreeCommands(object):
         tree.load() 
         executor = sloelib.SloeLocalExec(tree)
         work_manager = sloelib.SloeWorkManager()
-        work = work_manager.get_all_work(tree)
+        selectors = params
+        work, stats = work_manager.get_all_work(selectors)
         sloelib.SloeExecUtil.do_work(executor, work)  
    
    
     def command_lstree(self, params, options):
         tree = sloelib.SloeTree.inst()
         tree.load()
+        
         for subtree, album, items in sloelib.SloeTreeUtil.walk_items(tree.root_album):
+            album_printed = False            
+            
+            def print_album():
+                
+                    print "%s%sAlbum: %s '%s' (%s)" % (album.uuid[:8], "-" * len(indent), album.name, album.title, album._location.replace("\\", "/"))
+                    if options.verbose:
+                        pprint(album._d)
+                    
             indent = "  " * subtree.count("/")
             try:
-                print "%s%sAlbum: %s '%s' (%s)" % (album.uuid[:8], "-" * len(indent), album.name, album.title, album._location.replace("\\", "/"))
-                if options.verbose:
-                    pprint(album._d)
+                if sloelib.SloeTreeUtil.object_matches_selector(album, params):
+                    if not album_printed:
+                        print_album()
+                        album_printed = True
+                        
                 for item in items:
-                    item_spec = ("%sx%s %sFPS %.2fs %.1fMB" %
-                                 (item.video_width, item.video_height, item.video_avg_frame_rate, float(item.video_duration), float(item.video_size) / 2**20))
-                    print "%s%s  %s (%s %s)" % (item.uuid[:8], indent, item.name, os.path.splitext(item.leafname)[1], item_spec)
-                    if options.verbose:
-                        pprint(item._d)
+                    if sloelib.SloeTreeUtil.object_matches_selector(item, params):                        
+                        item_spec = ("%sx%s %sFPS %.2fs %.1fMB" %
+                                     (item.video_width, item.video_height, item.video_avg_frame_rate, float(item.video_duration), float(item.video_size) / 2**20))
+                        if not album_printed:
+                            print_album()
+                            album_printed = True
+                        print "%s%s  %s (%s %s)" % (item.uuid[:8], indent, item.name, os.path.splitext(item.leafname)[1], item_spec)
+                        if options.verbose:
+                            pprint(item._d)
     
                 for obj in album.genspecs:
-                    print "%s%s  GenSpec: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
-                    if options.verbose:
-                        pprint(obj._d)
-    
+                    if sloelib.SloeTreeUtil.object_matches_selector(obj, params):
+                        if not album_printed:
+                            print_album()
+                            album_printed = True
+                        print "%s%s  GenSpec: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
+                        if options.verbose:
+                            pprint(obj._d)
+        
                 for obj in album.outputspecs:
-                    print "%s%s  OutputSpec: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
-                    if options.verbose:
-                        pprint(obj._d)
-    
+                    if sloelib.SloeTreeUtil.object_matches_selector(obj, params):
+                        if not album_printed:
+                            print_album()
+                            album_printed = True
+                        print "%s%s  OutputSpec: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
+                        if options.verbose:
+                            pprint(obj._d)
+        
             except Exception, e:
                 logging.error("Missing attribute for %s" % album.get("name", "<Unknown>"))
                 raise e   
@@ -52,7 +76,7 @@ class SloePluginTreeCommands(object):
         tree = sloelib.SloeTree.inst()
         tree.load()   
         work_manager = sloelib.SloeWorkManager()
-        (work, stats) = work_manager.get_all_work(tree.root_album)
+        (work, stats) = work_manager.get_all_work(params)
         for job in work:
             extracted = sloelib.SloeExecUtil.extract_common_id(job.common_id)
             item_uuid = extracted["I"]

@@ -33,6 +33,7 @@ class SloeTree:
         self.root_album.set_value("name", "{root}")
         self.root_album.set_value("title", "")
         self.root_album.set_value("uuid", "0226ed39-1ea6-487d-8c3a-dfbc71d8df4a")
+        self.root_album.set_value("_is_root", True)
 
     
     @classmethod

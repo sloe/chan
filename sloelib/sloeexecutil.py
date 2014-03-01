@@ -31,7 +31,7 @@ class SloeExecUtil(object):
         ids = cls.extract_common_id(jobspec.common_id)
         (album, item) = SloeTrees.inst().find_album_and_item(ids["I"])
         outputspec = SloeTreeUtil.find_outputspec(album, ids["O"])
-        genspec_uuid = SloeTreeUtilget_genspec_uuid_for_outputspec(outputspec)
+        genspec_uuid = SloeTreeUtil.get_genspec_uuid_for_outputspec(outputspec)
             
         genspec = SloeTreeUtil.find_genspec(album, genspec_uuid)
         

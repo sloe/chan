@@ -2,6 +2,8 @@
 import logging
 import os
 from pprint import pformat, pprint
+import re
+import types
 import uuid
 
 from sloealbum import SloeAlbum
@@ -18,6 +20,66 @@ class SloeTreeUtil(object):
         glb_cfg = SloeConfig.inst()
         self.verbose = SloeConfig.get_option("verbose")
 
+        
+    @classmethod
+    def full_object_path_array(cls, obj):
+        return [obj.get("_primacy", "noprimacy"), obj.get("_worth", "noworth")] + obj.get("_subtree", "").split("/") + [obj.get("name", "noname")]
+        
+
+    
+    @classmethod
+    def object_matches_selector(cls, obj, selectors):
+        if selectors is None or selectors == []:
+            return True
+            
+        if isinstance(selectors, types.ListType) or isinstance(selectors, types.TupleType):
+            for selector in selectors:
+                if not cls.object_matches_selector(obj, selector):
+                    return False
+            return True
+                    
+        selector_is_match = True
+        if "=" not in selectors:
+            elements = selectors.split("/")
+            obj_path = cls.full_object_path_array(obj)
+            
+            for element in elements:
+                if len(obj_path) == 0:
+                    # Still more selector elements but we ran out of elemts to match in the object path
+                    selector_is_match = False
+                    break                    
+                
+                result = True
+                
+                if element.startswith("!"):
+                    negate = True
+                    element = element[1:]
+                else:
+                    negate = False
+                
+                if element == "***":
+                    obj_path = obj_path[-2:]                    
+                elif element == "**":
+                    obj_path = obj_path[1:]
+                elif element == "*":
+                    pass
+                elif element.endswith("*"):
+                    if not obj_path[0].startswith(element[:-1]):
+                        result = False
+                elif not element == obj_path[0]:
+                    result = False
+                    
+                if negate and result or (not negate and not result):
+                    # Selector has failed, so record and exit
+                    selector_is_match = False
+                    break
+                    
+                obj_path = obj_path[1:]
+        else:
+            selector_is_match = False        
+                
+        return selector_is_match
+            
                 
     @classmethod 
     def walk_albums(cls, album):
