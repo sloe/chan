@@ -7,8 +7,6 @@ import sys
 import sloelib
 from sloeplugins import *
 
-from sloegeneratecfg import SloeGenerateCfg
-
 class SloeApp:
 
     def get_global(self, name):

@@ -29,6 +29,6 @@ proj.file-list = [loc('sloeapp.py'),
                   loc('sloelib/sloerenderjob.py')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('sloeapp.py'): ('project',
-        (u'youtubedumptree',
+        (u'dowork **/mays2013/extras',
          ''))}
 proj.main-file = loc('sloeapp.py')

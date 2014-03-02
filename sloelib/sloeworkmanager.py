@@ -36,13 +36,10 @@ class SloeWorkManager(object):
                 "common_id": common_id
             })
             if found_item is not None:
-                logging.debug("In %s found item for workspec in %s" % (item._subtree, found_item._subtree))
                 add_workspec = False
                 stats_done += 1
                 
-        if add_workspec:
-            
-            logging.debug("**** No item item for workspec")            
+        if add_workspec:          
             workspec = SloeRenderJob()
             workspec.set_values(
                 name="workitem %s" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),

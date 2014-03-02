@@ -19,7 +19,7 @@ class SloeTrees:
         return cls.instance
 
 
-    def get_treepaths(self, primacy, subtree):
+    def get_treepaths(self, primacy):
         glb_cfg = SloeConfig.inst()
         primacies = glb_cfg.get_value("global", "primacies").split(",")
         if primacy not in primacies:
@@ -28,7 +28,7 @@ class SloeTrees:
         retval = {}
 
         for worth in glb_cfg.get_value("global", "worths").split(","):
-            retval[worth] = os.path.join(root_dir, primacy, worth, subtree)
+            retval[worth] = os.path.join(root_dir, primacy, worth)
         return retval
 
 

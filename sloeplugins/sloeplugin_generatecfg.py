@@ -13,16 +13,11 @@ import sloelib
 class SloePluginGenerateConfig(object):
    
     def command_generatecfg(self, params, options):
-        for subtree in params:    
-            self.process_tree(subtree)
-
-
-    def process_tree(self, subtree):
-        if sloelib.SloeConfig.get_option("final"):
+        sloelib.SloeTree.inst().load()
+        if options.final:
             primacy = "final"
         else:
             primacy = "primary"
-
         
         treeroot = sloelib.SloeConfig.get_global("treeroot")
         primacy_tree = os.path.join(treeroot, primacy)
@@ -31,7 +26,7 @@ class SloePluginGenerateConfig(object):
         for worth in sloelib.SloeConfig.get_global("worths").split(","):
             self.process_dir(worth, os.path.join(primacy_tree, worth))   
             
-        for worth, walkroot in sloelib.SloeTrees.inst().get_treepaths(primacy, subtree).iteritems():
+        for worth, walkroot in sloelib.SloeTrees.inst().get_treepaths(primacy).iteritems():
             logging.debug("generate_cfg walking tree directory %s" % walkroot)
             
             self.process_dir(os.path.basename(walkroot), walkroot)
@@ -53,7 +48,8 @@ class SloePluginGenerateConfig(object):
                             "_subtree" : string.replace(os.path.relpath(dirpath, subtree_root), "\\", "/"),
                             "_worth" : worth
                         }
-                        self.process_file(spec)
+                        if sloelib.SloeTreeUtil.object_matches_selector(spec, params):
+                            self.process_file(spec)                            
 
 
     def process_dir(self, name, full_path):

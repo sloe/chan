@@ -48,17 +48,17 @@ class SloePluginAfterEffects(object):
             os.makedirs(os.path.dirname(final_output_path))
             
         lock_path = final_output_path + '.lock'
-        if os.path.isfile(lock_path):
+        take_result = sloelib.SloeUtil.take_lock_if_possible(lock_path)
+        if take_result is not None and take_result != "take":
             raise sloelib.SloeError("Abandoning render because lock file '%s' exists" % lock_path)
         
-        with open(lock_path, mode="w") as f:
-             f.write("%d\n%s (PID=%d) has locked this output destination" % (os.getpid(), __file__, os.getpid()))
+        sloelib.SloeUtil.lock(lock_path)
         
         try:
             self.do_render_to_path(genspec, item, outputspec, final_output_path)
         
         finally:
-            os.unlink(lock_path)
+            sloelib.SloeUtil.unlock(lock_path)
             
             
         
@@ -108,6 +108,9 @@ class SloePluginAfterEffects(object):
 
         if last_frame < 1:
             last_frame = 1
+            
+        #logging.info("Real last frame would be %d" % last_frame)
+        #last_frame = 240
             
         sandbox_output_path = sandbox.get_sandbox_path(genspec.aftereffects_outputfilename)
             

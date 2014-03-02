@@ -37,43 +37,12 @@ class SloeSandbox(object):
     def get_lock_filepath(self):
         return self.get_sandbox_path(self.LOCK_FILENAME)
         
-
-    def is_locked(self):
-        return os.path.isfile(self.get_lock_filepath())
-        
-        
-    def lock(self):
-        if self.is_locked():
-            raise SloeError("Sandbox locked - remove '%s' file to continue" %
-                           self.get_lock_filepath())
-        
-        with open(self.get_lock_filepath(), mode="w") as f:
-            f.write("%d\n%s (PID=%d) has locked this sandbox" % (os.getpid(), __file__, os.getpid()))
-           
-           
-    def unlock(self):
-        if not self.is_locked():
-            raise SloeError("Cannot unlock sandbox - not locked (no lock file '%s')" % self.get_lock_filepath())        
-        os.unlink(self.get_lock_filepath())
-        
         
     def check_and_destroy_locked_sandbox(self):
-        if self.is_locked():
-            lock_pid = "<invalid>"
-            with open(self.get_lock_filepath(), mode="r") as f:
-                try:    
-                    line = f.readline()
-                    lock_pid = int(line)
-                except Exception, e:
-                    logging.error("Cannot determine PID value from lock file line '%s' (%s)" % (line, str(e)))
-            
-            running_pids = SloeUtil.get_running_pids()
-            if lock_pid in running_pids:
-                logging.info("Process holding sandbox lock (PID=%d) is still running" % lock_pid)
-            else:
-                logging.info("Process holding sandbox lock (PID=%d) is not running - destroying sandbox" % lock_pid)   
-                self.destroy()
-
+        take_result = SloeUtil.take_lock_if_possible(self.get_lock_filepath())
+        if take_result == "take":
+            SloeUtil.lock(self.get_lock_filepath())
+            self.destroy()
             
         
     def create(self, files_to_copy):
@@ -81,10 +50,10 @@ class SloeSandbox(object):
         if not os.path.isdir(sandbox_path):
             os.makedirs(sandbox_path)
             
-        if self.is_locked():
+        if SloeUtil.is_locked(self.get_lock_filepath()):
             self.check_and_destroy_locked_sandbox()
 
-        self.lock()
+        SloeUtil.lock(self.get_lock_filepath())
         self.filemap = {}
         for src, dest in files_to_copy.iteritems():
             sandbox_dest = os.path.join(sandbox_path, dest)
@@ -94,7 +63,7 @@ class SloeSandbox(object):
             
             
     def destroy(self):
-        if not self.is_locked():
+        if not SloeUtil.is_locked(self.get_lock_filepath()):
             raise SloeError("Cannot destroy sandbox because lock not held")
             
         keepsandbox = SloeConfig.inst().get_option("keepsandbox")            
@@ -111,4 +80,4 @@ class SloeSandbox(object):
                     logging.info("Deleting sandbox directory '%s'" % delete_path) 
                     os.rmdir(delete_path)
                 
-        self.unlock()
+        SloeUtil.unlock(self.get_lock_filepath())

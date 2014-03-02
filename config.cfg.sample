@@ -5,5 +5,6 @@ loglevel = DEBUG
 plugindirs = sloeplugins
 primacies = primary,final
 sandboxdir = C:\sloesandbox
-treeroot=\\win8service\oarstack\oarstack
+#treeroot=\\win8service\oarstack\oarstack
+treeroot=\ulen\oarstack
 worths = precious,derived,junk
