@@ -54,7 +54,7 @@ class SloeUtil(object):
         float_rate = cls.fraction_to_float(framerate_string)
         
         for rate in cls.KNOWN_FRAME_RATES:    
-            if abs(float_rate - float(rate)) < 0.04:
+            if abs(float_rate - float(rate)) < 0.2:
                 logging.debug("Conforming rate %s (%.4f) to %s" % (framerate_string, float_rate, rate))
                 return rate
             
