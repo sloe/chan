@@ -104,7 +104,7 @@ class SloeTree:
                             bytecount += self.add_item_from_ini(primacy, worth, subdir_path, subtree, filename, name, filename_uuid, album_for_path)
                             filecount += 1
                         elif (self.ini_regex.match(filename) and not self.album_ini_regex.match(filename) and not
-                              self.outputspec_ini_regex.match(filename) and not self.transferspec_ini_regex.match(filename):
+                              self.outputspec_ini_regex.match(filename) and not self.transferspec_ini_regex.match(filename)):
                             logging.warning("Suspicious misnamed(?) .ini file %s" % os.path.join(root, filename))
                 logging.info("Loaded %d item (%d MB) records from %s" % (filecount, bytecount / 2**20, subdir_path))
 
