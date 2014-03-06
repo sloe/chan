@@ -86,3 +86,31 @@ class SloeWorkManager(object):
         logging.debug("get_all_work done")
         
         return (sorted_work, stats)
+
+
+    def get_all_transfer_work(self, selectors):
+        work = []
+        stats = {
+            "todo" : 0,
+            "done" : 0
+        }
+        root_album = SloeTree.inst().root_album
+        logging.debug("get_all_transfer_work in %s" % root_album.name)
+        for subtree, album, items in SloeTreeUtil.walk_items(root_album):
+            logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
+            transferspecs = SloeTreeUtil.get_parent_transferspecs(album)
+            for transferspec in transferspecs:
+                logging.debug("%s Scanning with TransferSpec: %s" % (transferspec.uuid, transferspec.name))
+
+                for item in items:
+                    if SloeTreeUtil.object_matches_selector(item, selectors):
+                        (work_for_item, stats_for_item) = self.get_work_for_item(album, item, transferspec)
+                        work += work_for_item
+                        
+                        for k in stats.keys():
+                            stats[k] += stats_for_item[k]
+                        
+        sorted_work = reversed(sorted(work, key=lambda x: x.get("priority", 0.0)))
+        logging.debug("get_all_transfer_work done")
+        
+        return (sorted_work, stats)        

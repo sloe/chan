@@ -15,6 +15,7 @@ class SloeAlbum(SloeTreeNode):
         self.genspec_dict = {}
         self.item_dict = {}
         self.outputspec_dict = {}
+        self.transferspec_dict = {}
         self._album_names_to_uuids = {}
 
 
@@ -107,6 +108,11 @@ class SloeAlbum(SloeTreeNode):
         return self.outputspec_dict.values()
 
 
+    @property
+    def transferspecs(self):
+        return self.transferspec_dict.values()
+   
+
     def add_child_album(self, obj):
         obj.set_value("_parent_album_uuid", self.uuid)
         self.subalbum_dict[obj.uuid] = obj
@@ -127,6 +133,12 @@ class SloeAlbum(SloeTreeNode):
     def add_child_outputspec(self, obj):
         self.outputspec_dict[obj.uuid] = obj
         obj.set_value("_parent_album_uuid", self._d["uuid"])
+
+
+    def add_child_transferspec(self, obj):
+        self.transferspec_dict[obj.uuid] = obj
+        obj.set_value("_parent_album_uuid", self._d["uuid"])
+
 
 
 #    def __repr__(self):

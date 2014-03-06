@@ -12,6 +12,7 @@ from sloeerror import SloeError
 from sloegenspec import SloeGenSpec
 from sloeitem import SloeItem
 from sloeoutputspec import SloeOutputSpec
+from sloetransferspec import SloeTransferSpec
 
 class SloeTree:
     instance = None
@@ -20,6 +21,7 @@ class SloeTree:
     genspec_ini_regex = re.compile(r"(.*)-GENSPEC=([0-9A-Fa-f-]{36})\.ini$")
     item_ini_regex = re.compile(r"(.*)-ITEM=([0-9A-Fa-f-]{36})\.ini$")
     outputspec_ini_regex = re.compile(r"(.*)-OUTPUTSPEC=([0-9A-Fa-f-]{36})\.ini$")
+    transferspec_ini_regex = re.compile(r"(.*)-TRANSFERSPEC=([0-9A-Fa-f-]{36})\.ini$")
     ini_regex = re.compile(r".*\.ini$")
 
     def __init__(self):
@@ -101,7 +103,8 @@ class SloeTree:
                                 album_for_path = self.load_album_for_path(root)
                             bytecount += self.add_item_from_ini(primacy, worth, subdir_path, subtree, filename, name, filename_uuid, album_for_path)
                             filecount += 1
-                        elif self.ini_regex.match(filename) and not self.album_ini_regex.match(filename) and not self.outputspec_ini_regex.match(filename):
+                        elif (self.ini_regex.match(filename) and not self.album_ini_regex.match(filename) and not
+                              self.outputspec_ini_regex.match(filename) and not self.transferspec_ini_regex.match(filename):
                             logging.warning("Suspicious misnamed(?) .ini file %s" % os.path.join(root, filename))
                 logging.info("Loaded %d item (%d MB) records from %s" % (filecount, bytecount / 2**20, subdir_path))
 
@@ -145,7 +148,12 @@ class SloeTree:
                 if match:
                     name = match.group(1)
                     filename_uuid = match.group(2)
-                    self.add_outputspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)          
+                    self.add_outputspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)   
+                match = self.transferspec_ini_regex.match(filename)
+                if match:
+                    name = match.group(1)
+                    filename_uuid = match.group(2)
+                    self.add_transferspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)                       
 
             parent_album = album_found
         return album_found
@@ -209,6 +217,11 @@ class SloeTree:
     def add_outputspec_from_ini(self, full_path, name, filename_uuid, dest_album):
         item = SloeOutputSpec.new_from_ini_file(full_path, "SloeTree.add_outputspec_from_ini: " + full_path)
         dest_album.add_child_outputspec(item)
+
+
+    def add_transferspec_from_ini(self, full_path, name, filename_uuid, dest_album):
+        item = SloeTransferSpec.new_from_ini_file(full_path, "SloeTree.add_transferspec_from_ini: " + full_path)
+        dest_album.add_child_transferspec(item)
 
 
     def __repr__(self):

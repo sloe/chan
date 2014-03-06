@@ -13,7 +13,7 @@ class SloeTransferSpec(SloeTreeNode):
 
     @classmethod
     def new_from_ini_file(cls, ini_filepath, error_info):
-        obj = SloeOutputSpec()
+        obj = SloeTransferSpec()
         obj.create_from_ini_file(ini_filepath, error_info)
         obj.priority = float(obj.priority)
         return obj

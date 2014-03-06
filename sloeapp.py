@@ -87,23 +87,6 @@ class SloeApp:
                 getattr(self, command)(*self.args[1:])
 
 
-    def dowork(self, *subtrees):
-        glb_cfg = sloelib.SloeConfig.inst()
-        for subtree in subtrees:
-            tree = sloelib.SloeTrees.inst().get_tree()
-            executor = sloelib.SloeLocalExec(tree)
-            work_manager = sloelib.SloeWorkManager()
-            work = work_manager.get_all_work(tree)
-            sloelib.SloeExecUtil.do_work(executor, work)
-
-    def generatecfg(self, *params):
-        sloelib.SloeTrees.inst().get_tree()
-        sloelib.SloePlugInManager.inst().call_plugin(
-            "generatecfg",
-            "command_generatecfg",
-            params=params)
-
-
     def lsoutput(self, *subtrees):
         glb_cfg = sloelib.SloeConfig.inst()
         for subtree in subtrees:

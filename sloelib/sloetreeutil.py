@@ -126,6 +126,14 @@ class SloeTreeUtil(object):
 
         return outputspecs
     
+    @classmethod 
+    def get_parent_transferspecs(cls, album):
+        transferspecs = []
+        for parent_album in cls.walk_parents(album):
+            transferspecs += parent_album.transferspecs
+
+        return transferspecs
+    
     
     @classmethod 
     def find_genspec_uuid_by_name(cls, album, genspec_name):

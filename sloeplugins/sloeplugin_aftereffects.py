@@ -84,33 +84,50 @@ class SloePluginAfterEffects(object):
             src_movie : dest_movie
         })
         
-        if sloelib.SloeConfig.get_option("prerenderabort"):
-            logging.info("Aborting due to --prerenderabort flag")
-            sys.exit(1)
+
          
-        conformed_frame_rate = sloelib.SloeUtil.get_canonical_frame_rate(item.video_avg_frame_rate)
         
-        output_to_input_frame_factor = (float(genspec.output_frame_rate) /
-            (float(conformed_frame_rate) * sloelib.SloeUtil.fraction_to_float(genspec.speed_factor)))
+        video_avg_frame_rate = float(sloelib.SloeUtil.get_canonical_frame_rate(item.video_avg_frame_rate))
+        
+        # After Effects projects can either specify and input frame rate (and interpret the
+        # input fottage as being that rate) or take the input frame rate from the source footage.
+        # Here we support both options, depending on whether input_conformed_frame_rate is present
+        # in the GenSpec
+        input_conformed_frame_rate = genspec.get("input_conformed_frame_rate", None)
+        if input_conformed_frame_rate is not None:
+            conformed_frame_rate = float(input_conformed_frame_rate)
+            output_frames_per_input_frame = sloelib.SloeUtil.fraction_to_float(genspec.output_frames_per_input_frame)
+            logging.info("Project conforms input frame rate %.2f to %.2f" % (video_avg_frame_rate, conformed_frame_rate))
+        else:    
+            conformed_frame_rate = video_avg_frame_rate
+            output_frames_per_input_frame = (float(genspec.output_frame_rate) /
+                (float(conformed_frame_rate) * sloelib.SloeUtil.fraction_to_float(genspec.speed_factor)))
+            logging.info("Using frame rate %.2f from input file" % (video_avg_frame_rate, conformed_frame_rate))            
+        
+
         # Use math.trunc to round down, so when speeding up (speed_factor > 1) we don't generate
         # frames after the input source has run out
-        last_frame = math.trunc(float(item.video_nb_frames) * output_to_input_frame_factor)
+        last_frame = math.trunc(float(item.video_nb_frames) * output_frames_per_input_frame)
             
         # After Effects numbers frames from zero, so the last frame is one less than the number of frames
 
-        if output_to_input_frame_factor < 1:
+        if output_frames_per_input_frame < 1:
             last_frame -= 1
         else:
-            # When slowing down, Twitor will 'reach out' to the next frame to blend it, which, as the
-            # frame beyond the last inout frame is blank, darkens the image.  This correction stops
+            # When slowing down, Twixtor will 'reach out' to the next frame to blend it, which, as the
+            # frame beyond the last input frame is blank, darkens the image.  This correction stops
             # the render just before that happens
-            last_frame -= output_to_input_frame_factor
+            last_frame -= output_frames_per_input_frame
 
         if last_frame < 1:
             last_frame = 1
-            
-        #logging.info("Real last frame would be %d" % last_frame)
-        #last_frame = 240
+        
+        logging.info("Launching render for '%s' frame factor %.2f input frames %s output frames %d" % (
+            item.name, output_frames_per_input_frame, item.video_nb_frames, last_frame+1))
+        
+        if sloelib.SloeConfig.get_option("prerenderabort"):
+            logging.info("Aborting due to --prerenderabort flag")
+            sys.exit(1)
             
         sandbox_output_path = sandbox.get_sandbox_path(genspec.aftereffects_outputfilename)
             
