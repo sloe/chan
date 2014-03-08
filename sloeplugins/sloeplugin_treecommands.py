@@ -8,6 +8,16 @@ import sloelib
 
 class SloePluginTreeCommands(object):
     
+    def command_dotrans(self, params, options):
+        tree = sloelib.SloeTree.inst()
+        tree.load() 
+        executor = sloelib.SloeLocalExec(tree)
+        work_manager = sloelib.SloeWorkManager()
+        selectors = params
+        work, stats = work_manager.get_all_transfer_work(selectors)
+        sloelib.SloeExecUtil.do_work(executor, work)
+        
+        
     def command_dowork(self, params, options):
         tree = sloelib.SloeTree.inst()
         tree.load() 
@@ -96,7 +106,7 @@ class SloePluginTreeCommands(object):
             extracted = sloelib.SloeExecUtil.extract_common_id(job.common_id)
             item_uuid = extracted["I"]
             album, item = sloelib.SloeTreeUtil.find_album_and_item(item_uuid)
-            print "Transfer item pri=%.0f '%s/%s' using transferspec %s" % (job.priority, item._subtree, item.name, extracted["O"])
+            print "Transfer item pri=%.0f '%s/%s' using transferspec %s" % (job.priority, item._subtree, item.name, extracted["T"])
             
         print "Transfer items to do = %d, already done = %d" % (stats["todo"], stats["done"])
    
@@ -134,6 +144,7 @@ class SloePluginTreeCommands(object):
         obj = SloePluginTreeCommands()
         spec = {
             "methods": {
+                "command_dotrans" : cls.command_dotrans,
                 "command_dowork" : cls.command_dowork,
                 "command_lstrans" : cls.command_lstrans,
                 "command_lstree" : cls.command_lstree,

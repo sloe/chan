@@ -183,6 +183,16 @@ class SloeTreeUtil(object):
                     
         raise SloeError("OutputSpec not found for %s" % obj_uuid)
     
+        
+    @classmethod 
+    def find_transferspec(cls, album, obj_uuid):
+        for album in SloeTreeUtil.walk_parents(album):
+            for obj in album.transferspecs:
+                if obj.uuid == obj_uuid:
+                    return obj
+                    
+        raise SloeError("TransferSpec not found for %s" % obj_uuid)
+    
 
     @classmethod
     def find_album_by_uuid(cls, uuid):

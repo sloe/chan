@@ -12,6 +12,7 @@ from sloeerror import SloeError
 from sloeitem import SloeItem
 from sloeoutputspec import SloeOutputSpec
 from sloerenderjob import SloeRenderJob
+from sloetransferjob import SloeTransferJob
 from sloetree import SloeTree
 from sloetreeutil import SloeTreeUtil
 
@@ -88,6 +89,38 @@ class SloeWorkManager(object):
         return (sorted_work, stats)
 
 
+    def get_transfer_work_for_item(self, album, item, transferspec):
+        work = []
+        stats_todo = 0
+        stats_done = 0
+            
+        common_id = "I=%s,T=%s" % (item.uuid, transferspec.uuid)
+        found_item = SloeTreeUtil.find_item_by_spec({
+            "common_id": common_id
+        })
+        if found_item is not None:
+            stats_done += 1
+        else:
+            stats_todo += 1
+            workspec = SloeTransferJob()
+            workspec.set_values(
+                name="transferitem %s" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+                common_id=common_id,
+                leafname="+transferjob,%s" % common_id,
+                priority=transferspec.priority,
+                transfer_type = transferspec.transfer_type
+            )
+            workspec.create_uuid()
+            workspec.verify_creation_data()
+            work.append(workspec)
+        
+        stats = {
+        "todo" : stats_todo,
+        "done" : stats_done
+        }
+        return (work, stats)
+
+
     def get_all_transfer_work(self, selectors):
         work = []
         stats = {
@@ -102,9 +135,10 @@ class SloeWorkManager(object):
             for transferspec in transferspecs:
                 logging.debug("%s Scanning with TransferSpec: %s" % (transferspec.uuid, transferspec.name))
 
+                combined_selectors = selectors + transferspec.selectors.split(",")
                 for item in items:
-                    if SloeTreeUtil.object_matches_selector(item, selectors):
-                        (work_for_item, stats_for_item) = self.get_work_for_item(album, item, transferspec)
+                    if SloeTreeUtil.object_matches_selector(item, combined_selectors):
+                        (work_for_item, stats_for_item) = self.get_transfer_work_for_item(album, item, transferspec)
                         work += work_for_item
                         
                         for k in stats.keys():

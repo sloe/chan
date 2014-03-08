@@ -7,7 +7,7 @@ from sloeerror import SloeError
 from sloetreenode import SloeTreeNode
 
 class SloeTransferSpec(SloeTreeNode):
-    MANDATORY_ELEMENTS = ("name", "priority", "uuid")
+    MANDATORY_ELEMENTS = ("name", "priority", "transfer_type", "uuid")
     def __init__(self):
         SloeTreeNode.__init__(self, "transferspec", "06")
 

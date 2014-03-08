@@ -10,7 +10,7 @@ import sloelib
 
 from sloeyoutubeitem import SloeYouTubeItem
 
-class SloeYouTubeTree:
+class SloeYouTubeTree(object):
     IDMAP_CACHE_FILENAME = "youtubetree_idmap_cache.pickle"
     IDMAP_CACHE_VALID_FILENAME = "youtubetree_idmap_cache.valid"
 

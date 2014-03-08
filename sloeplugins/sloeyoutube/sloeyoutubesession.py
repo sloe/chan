@@ -13,40 +13,41 @@ from oauth2client.tools import argparser, run_flow
 
 import sloelib
 
-class SloeYouTubeSession:
-  YOUTUBE_API_SERVICE_NAME = "youtube"
-  YOUTUBE_API_VERSION = "v3"
+class SloeYouTubeSession(object):
+    YOUTUBE_API_SERVICE_NAME = "youtube"
+    YOUTUBE_API_VERSION = "v3"
 
-  def __init__(self, access):
-    self.youtube = None
-    self.secrets_file = "client_secrets.json"
-    self.storage_file = "oauth_storage_%s.json" % access
-    if access == "w":
-      self.scope = "https://www.googleapis.com/auth/youtube"
-    elif access == "r":
-      self.scope = "https://www.googleapis.com/auth/youtube.readonly"
-    else:
-      raise sloelib.SloeError("access must be r or w")
+    def __init__(self, access):
+        self.youtube = None
+        self.secrets_file = "client_secrets.json"
+        self.storage_file = "oauth_storage_%s.json" % access
+        if access == "w":
+            self.scope = "https://www.googleapis.com/auth/youtube"
+        elif access == "r":
+            self.scope = "https://www.googleapis.com/auth/youtube.readonly"
+        elif access == "upload":
+            self.scope = "https://www.googleapis.com/auth/youtube.upload"
+        else:
+            raise sloelib.SloeError("access must be r, w, or upload")
 
-  def __call__(self):
-    if self.youtube is None:
-      self._open_session()
+    def __call__(self):
+        if self.youtube is None:
+            self._open_session()
 
-    return self.youtube
+        return self.youtube
 
-  def _open_session(self):
-    self.flow = flow_from_clientsecrets(self.secrets_file,
-      message="Auth failed",
-      scope=self.scope)
+    def _open_session(self):
+        self.flow = flow_from_clientsecrets(self.secrets_file,
+                                            message="Auth failed",
+                                            scope=self.scope)
 
-    storage = Storage(self.storage_file)
-    credentials = storage.get()
+        storage = Storage(self.storage_file)
+        credentials = storage.get()
 
-    if credentials is None or credentials.invalid:
-      flags = argparser.parse_args([])
-      credentials = run_flow(self.flow, storage, flags)
+        if credentials is None or credentials.invalid:
+            flags = argparser.parse_args([])
+            credentials = run_flow(self.flow, storage, flags)
 
-    self.youtube = build(self.YOUTUBE_API_SERVICE_NAME, self.YOUTUBE_API_VERSION,
-      http=credentials.authorize(httplib2.Http()))
-
+        self.youtube = build(self.YOUTUBE_API_SERVICE_NAME, self.YOUTUBE_API_VERSION,
+                             http=credentials.authorize(httplib2.Http()))
 

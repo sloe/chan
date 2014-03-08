@@ -8,7 +8,7 @@ import time
 
 import sloelib
 
-class SloeYouTubeItem:
+class SloeYouTubeItem(object):
     ID_TAG_PREFIX = u"sloeid="
     def __init__(self, spec):
         self.spec = spec
@@ -47,6 +47,7 @@ class SloeYouTubeItem:
             logging.warning("Adding sloeid tag for %s" % self.spec[u"title"])
             snippet[u"tags"].append(formed_tag)
             self._set_modified()
+
 
     def update_video_description(self, description):
         snippet = self.spec[u"sloevideo"][u"snippet"]

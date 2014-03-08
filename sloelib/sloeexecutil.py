@@ -27,7 +27,7 @@ class SloeExecUtil(object):
     
     
     @classmethod   
-    def get_specs_for_job(cls, jobspec):
+    def get_specs_for_render_job(cls, jobspec):
         ids = cls.extract_common_id(jobspec.common_id)
         (album, item) = SloeTrees.inst().find_album_and_item(ids["I"])
         outputspec = SloeTreeUtil.find_outputspec(album, ids["O"])
@@ -36,4 +36,13 @@ class SloeExecUtil(object):
         genspec = SloeTreeUtil.find_genspec(album, genspec_uuid)
         
         return (genspec, item, outputspec)
+        
+    
+    @classmethod   
+    def get_specs_for_transfer_job(cls, jobspec):
+        ids = cls.extract_common_id(jobspec.common_id)
+        (album, item) = SloeTrees.inst().find_album_and_item(ids["I"])
+        transferspec = SloeTreeUtil.find_transferspec(album, ids["T"])
+        
+        return (item, transferspec)
         

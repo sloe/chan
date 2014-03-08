@@ -23,13 +23,29 @@ class SloePluginYoutube(object):
         print tree
 
 
+    def do_transfer_job(self, item, transferspec):
+        pprint(item)
+        pprint(transferspec)
+
+        session = sloeyoutube.SloeYouTubeSession("upload")
+        spec = {
+            "category": "17",
+            "description": "Sloecoach test video (auto)",
+            "filepath": item.get_file_path(),
+            "privacy": "unlisted",
+            "title": item.name
+        }
+        sloeyoutube.SloeYouTubeUpload.do_upload(session, spec)
+
+
     @classmethod
     def register(cls):
         obj = SloePluginYoutube()
         spec = {
             "methods": {
                 "command_youtubeauth" : cls.command_youtubeauth,
-                "command_youtubedumptree" : cls.command_youtubedumptree
+                "command_youtubedumptree" : cls.command_youtubedumptree,
+                "do_transfer_job" : cls.do_transfer_job              
             },
             "object": obj
         }

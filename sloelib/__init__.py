@@ -11,6 +11,7 @@ from sloeoutpututil import SloeOutputUtil
 from sloepluginmanager import SloePlugInManager
 from sloerenderjob import SloeRenderJob
 from sloesandbox import SloeSandbox
+from sloetransferjob import SloeTransferJob
 from sloetree import SloeTree
 from sloetreenode import SloeTreeNode
 from sloetrees import SloeTrees
@@ -22,6 +23,6 @@ from sloeworkmanager import SloeWorkManager
 
 __all__ = ["sloealbum", "sloeconfig", "sloeerror", "sloeexecutil", "sloegenspec", "sloeitem",
            "sloelocalexec", "sloeoutputspec", "sloeoutpututil", "sloepluginmanager", "sloerenderjob", "sloesandbox",
-           "sloetree", "sloetreenode", "sloetrees", "sloetreeutil", "sloeutil", "sloevideoutil",
+           "sloetransferjob", "sloetree", "sloetreenode", "sloetrees", "sloetreeutil", "sloeutil", "sloevideoutil",
            "sloeworkmanager"]
 __version__ = "0.0.1"
