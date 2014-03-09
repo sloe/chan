@@ -50,7 +50,7 @@ class SloeYouTubeUpload(object):
             media_body=MediaFileUpload(spec["filepath"], chunksize=-1, resumable=True)
         )
 
-        cls.resumable_upload(insert_request)
+        return cls.resumable_upload(insert_request)
 
 
     @classmethod
@@ -60,13 +60,14 @@ class SloeYouTubeUpload(object):
         retry = 0
         try:
             orig_httplib2_retries = httplib2.RETRIES
-            httplib2.RETRIES = 1
+            httplib2.RETRIES = 1 # 1 -> no retries, just a single attempt
             while response is None:
                 try:
                     logging.info("Uploading file...")
                     status, response = insert_request.next_chunk()
                     if 'id' in response:
-                        logging.info("Video id '%s' was successfully uploaded." % response['id'])
+                        logging.info("Video id '%s' was successfully uploaded." % response["id"])
+                        return response["id"]
                     else:
                         error_message = "The upload failed with an unexpected response: %s" % response
                 except HttpError, e:

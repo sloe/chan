@@ -24,9 +24,6 @@ class SloePluginYoutube(object):
 
 
     def do_transfer_job(self, item, transferspec):
-        pprint(item)
-        pprint(transferspec)
-
         session = sloeyoutube.SloeYouTubeSession("upload")
         spec = {
             "category": "17",
@@ -35,7 +32,14 @@ class SloePluginYoutube(object):
             "privacy": "unlisted",
             "title": item.name
         }
-        sloeyoutube.SloeYouTubeUpload.do_upload(session, spec)
+        try:            
+            remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(session, spec)
+            
+            remote_url = "http://youtu.be/%s" % remote_id
+            sloelib.SloeOutputUtil.create_remoteitem_ini(item, transferspec, 
+                                                        remote_id, remote_url)
+        except Exception, e:
+            logging.error("Abandoned transfer attempt: %s" % str(e))
 
 
     @classmethod

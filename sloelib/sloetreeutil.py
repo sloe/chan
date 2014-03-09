@@ -237,6 +237,24 @@ class SloeTreeUtil(object):
 
 
     @classmethod
+    def find_remoteitem_by_spec(cls, spec):
+        for _, album, _ in SloeTreeUtil.walk_items(SloeTree.inst().get_root_album()):
+            
+            for remoteitem in album.remoteitems:
+                found = True
+                
+                for k, v in spec.iteritems():
+                    if remoteitem.get(k, None) != v:
+                        found = False
+                        break
+                    
+                if found:    
+                    return remoteitem
+            
+        return None
+
+
+    @classmethod
     def find_or_create_derived_album(cls, source_album_uuid, dest_treelist):
         source_album = cls.find_album_by_uuid(source_album_uuid)
         if source_album is None:

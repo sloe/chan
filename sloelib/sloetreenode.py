@@ -11,7 +11,7 @@ from sloeconfig import SloeConfig
 from sloeerror import SloeError
 
 class SloeTreeNode(object):
-    MANDATORY_ELEMENTS = []
+    MANDATORY_ELEMENTS = ()
 
     def __init__(self, _type, uuid_prefix = None):
         self._type = _type

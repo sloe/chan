@@ -95,7 +95,7 @@ class SloeWorkManager(object):
         stats_done = 0
             
         common_id = "I=%s,T=%s" % (item.uuid, transferspec.uuid)
-        found_item = SloeTreeUtil.find_item_by_spec({
+        found_item = SloeTreeUtil.find_remoteitem_by_spec({
             "common_id": common_id
         })
         if found_item is not None:

@@ -9,6 +9,7 @@ from sloealbum import SloeAlbum
 from sloeconfig import SloeConfig
 from sloeerror import SloeError
 from sloeitem import SloeItem
+from sloeremoteitem import SloeRemoteItem
 from sloetree import SloeTree
 from sloetreeutil import SloeTreeUtil
 from sloevideoutil import SloeVideoUtil
@@ -86,10 +87,35 @@ class SloeOutputUtil(object):
         }
         existing_item = current_tree.get_item_from_spec(spec)
         logging.info("existing item=%s"% pformat(existing_item))
-        item = SloeItem()
-        item.create_new(existing_item, spec)
+        new_item = SloeItem()
+        new_item.create_new(existing_item, spec)
         
-        item.update(SloeVideoUtil.detect_video_params(item.get_file_path()))
-        parent_album.add_child_item(item)
-        item.save_to_file()    
+        new_item.update(SloeVideoUtil.detect_video_params(new_item.get_file_path()))
+        parent_album.add_child_item(new_item)
+        new_item.save_to_file()    
+        
+        
+    @classmethod
+    def create_remoteitem_ini(cls, item, transferspec, remote_id, remote_url):
+        parent_album = SloeTreeUtil.find_album_by_uuid(item._parent_album_uuid)
+        
+        common_id = "I=%s,T=%s" % (item.uuid, transferspec.uuid)
+        spec = {
+            "_primacy" : item._primacy,
+            "_worth" : item._worth,
+            "_subtree" : item._subtree,
+            "common_id" : common_id,
+            "name" : item.name
+        }
+        existing_remoteitem = SloeTreeUtil.find_remoteitem_by_spec(spec)
+        logging.info("existing remoteitem=%s"% pformat(existing_remoteitem))
+        spec.update({
+            "remote_id": remote_id,
+            "remote_url": remote_url            
+        })
+        remoteitem = SloeRemoteItem()
+        remoteitem.create_new(existing_remoteitem, spec)
+        
+        parent_album.add_child_remoteitem(remoteitem)
+        remoteitem.save_to_file()
         

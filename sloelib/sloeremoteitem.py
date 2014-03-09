@@ -1,7 +1,6 @@
 
 import logging
 import os
-import sys
 from pprint import pprint, pformat
 
 from sloeconfig import SloeConfig
@@ -9,11 +8,11 @@ from sloeerror import SloeError
 from sloetreenode import SloeTreeNode
 
 
-class SloeItem(SloeTreeNode):
-    MANDATORY_ELEMENTS = ("leafname", "name")
+class SloeRemoteItem(SloeTreeNode):
+    MANDATORY_ELEMENTS = ("common_id", "name", "remote_id", "remote_url")
 
     def __init__(self):
-        SloeTreeNode.__init__(self, "item", "01")
+        SloeTreeNode.__init__(self, "remoteitem", "08")
 
 
     def create_new(self, existing_item, spec):
@@ -38,7 +37,7 @@ class SloeItem(SloeTreeNode):
 
     @classmethod
     def new_from_ini_file(cls, ini_filepath, error_info):
-        item = SloeItem()
+        item = SloeRemoteItem()
         item.create_from_ini_file(ini_filepath, error_info)
         return item
 
@@ -46,20 +45,11 @@ class SloeItem(SloeTreeNode):
     def get_file_dir(self):
         root_dir = SloeConfig.inst().get_global("treeroot")
         return os.path.join(root_dir, self._d["_primacy"], self._d["_worth"], self._d["_subtree"])
-
-
-    def get_file_path(self):
-        return os.path.join(self.get_file_dir(), self._d["leafname"])
     
 
     def get_ini_filepath(self):
-        treepath = os.path.dirname(self.get_file_path())
-        return os.path.join(treepath, self.get_ini_leafname());
-
-
-    def dump(self):
-        return pformat(self._d)
+        return os.path.join(self.get_file_dir(), self.get_ini_leafname());
 
 
     def __repr__(self):
-        return "|Item|%s" % pformat(self._d)
+        return "|RemoteItem|%s" % pformat(self._d)

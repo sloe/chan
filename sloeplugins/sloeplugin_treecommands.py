@@ -76,6 +76,26 @@ class SloePluginTreeCommands(object):
                         print "%s%s  OutputSpec: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
                         if options.verbose:
                             pprint(obj._d)
+                            
+                            
+                for obj in album.remoteitems:
+                    if sloelib.SloeTreeUtil.object_matches_selector(obj, params):
+                        if not album_printed:
+                            print_album()
+                            album_printed = True
+                        print "%s%sR %s %s" % (obj.uuid[:8], indent, obj.name, obj.remote_url)
+                        if options.verbose:
+                            pprint(obj._d)                              
+                            
+                            
+                for obj in album.transferspecs:
+                    if sloelib.SloeTreeUtil.object_matches_selector(obj, params):
+                        if not album_printed:
+                            print_album()
+                            album_printed = True
+                        print "%s%s  TransferSpec: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
+                        if options.verbose:
+                            pprint(obj._d)                
         
             except Exception, e:
                 logging.error("Missing attribute for %s" % album.get("name", "<Unknown>"))
