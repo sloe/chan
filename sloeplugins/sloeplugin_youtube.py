@@ -30,8 +30,8 @@ class SloePluginYoutube(object):
             remoteitem = sloelib.SloeOutputUtil.find_remoteitem(item, transferspec)
             tags = transferspec.get("tags", []) + ["OARSTACKID:I=%s,R=%s,T=%s" % (item.uuid, remoteitem.uuid, transferspec.uuid)]
             
-            title = sloelib.SloeOutputUtil.get_item_title(item, remoteitem, transferspec)
-            description = "desc" # sloelib.SloeOutputUtil.get_item_description(item, transferspec)
+            title = sloelib.SloeOutputUtil.substitute_for_remote_item(transferspec.title_merge, item, remoteitem, transferspec)
+            description = sloelib.SloeOutputUtil.substitute_for_remote_item(transferspec.description_merge, item, remoteitem, transferspec)
             youtube_spec = {
                 "category": "17",
                 "description": description,
@@ -42,7 +42,7 @@ class SloePluginYoutube(object):
             }
             logging.info("youtube_spec=%s" % pformat(youtube_spec))
             youtube_session = sloeyoutube.SloeYouTubeSession("upload")
-            remote_id = "test" # sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
+            remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
 
             remoteitem.update({
                 "description": description,

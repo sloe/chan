@@ -119,19 +119,10 @@ class SloeOutputUtil(object):
             nodes.append(album)
         nodes.append(item)
         return SloeUtil.substitute_from_node_list(input_string, node_name, nodes)    
-
-
-    @classmethod
-    def get_item_description(cls, item, remoteitem, transferspec):
-        replacements = {}
-        
-        replacements.update(cls.replacements_for_item(item))
-        
-        return SloeUtil.substitute_vars(transferspec.description_merge, replacements)
         
 
     @classmethod
-    def get_item_title(cls, item, remoteitem, transferspec):
+    def substitute_for_remote_item(cls, value, item, remoteitem, transferspec):
         extracted = SloeUtil.extract_common_id(item.common_id)
         genspec = SloeTreeUtil.find_genspec(SloeTree.inst().root_album, extracted["G"])
         source_item = SloeTreeUtil.find_item(SloeTree.inst().root_album, extracted["I"])
@@ -139,16 +130,19 @@ class SloeOutputUtil(object):
         
         dest_album = SloeTreeUtil.find_album_by_uuid(item._parent_album_uuid)
         source_album = SloeTreeUtil.find_album_by_uuid(dest_album.source_album_uuid)
-        
-        value = transferspec.title_merge
+
         value = SloeUtil.substitute_from_node_list(value, "destitem", item)
         value = SloeUtil.substitute_from_node_list(value, "sourceitem", source_item)
         value = SloeUtil.substitute_from_node_list(value, "destalbum", dest_album)
         value = SloeUtil.substitute_from_node_list(value, "sourcealbum", source_album)
         value = SloeUtil.substitute_from_node_list(value, "genspec", genspec)
         value = SloeUtil.substitute_from_node_list(value, "outputspec", outputspec)
+        value = SloeUtil.substitute_from_node_list(value, "remoteitem", remoteitem)
         value = cls.substitute_from_tree(value, "sourcetree", source_album, item)
         value = cls.substitute_from_tree(value, "desttree", dest_album, item)
         replacements = {}
          
-        return SloeUtil.substitute_vars(value, replacements)
+        value = SloeUtil.substitute_vars(value, replacements)
+        value = value.replace("\\n", "\n")
+        
+        return value
