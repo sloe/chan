@@ -161,23 +161,44 @@ class SloeUtil(object):
             nodes = (node_or_nodes,)
             
         value = input_string[:]
-        search_regexp = re.compile(r'(.*){' + node_name + r'\.(\w+)}(.*)')
+        search_regexp = re.compile(r'(.*){([^}]*)' + node_name + r'\.(\w+)}(.*)')
+        
         for i in xrange(10000):
             if i == 1000:
                 raise SloeError("Recursion in variable substitution for %s" % input_string)
             match = search_regexp.match(value)
             if not match:
                 break
-            name = match.group(2)
             subst = None
-            for node in nodes:
-                subst = node.get(name, None)
-                if subst is not None:
-                    break
+            prefix = match.group(2)
+            name = match.group(3)
+            name_plus_split = prefix.split("+")
+            if len(name_plus_split) == 2:
+                subst_array = []
+                for node in nodes:
+                    subst = node.get(name, "")
+                    if subst != "":
+                        subst_array.append(subst)
+                subst = name_plus_split[0].join(subst_array)
+            elif prefix == ">":
+                for node in reversed(nodes):
+                    subst = node.get(name, None)
+                    if subst is not None:
+                        break
+            elif prefix == "<":
+                for node in nodes:
+                    subst = node.get(name, None)
+                    if subst is not None:
+                        break                
+            else:
+                for node in nodes:
+                    subst = node.get(name, None)
+                    if subst is not None:
+                        break
             if subst is None:
-                raise SloeError("No substitution variable {%s}" % name)
-            logging.debug("Substituted %s for %s" % (subst, match.group(2)))
-            value = match.group(1) + subst + match.group(3)
+                raise SloeError("No substitution variable {%s%s.%s}" % (prefix, node_name, name))
+            logging.debug("Substituted %s for {%s%s.%s}" % (subst, prefix, node_name, name))
+            value = match.group(1) + subst + match.group(4)
    
         return value
             

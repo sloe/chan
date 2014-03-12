@@ -114,10 +114,10 @@ class SloeOutputUtil(object):
     
     @classmethod
     def substitute_from_tree(cls, input_string, node_name, parent_album, item):
-        nodes = [item]
+        nodes = []
         for album in SloeTreeUtil.walk_parents(parent_album):
             nodes.append(album)
-            
+        nodes.append(item)
         return SloeUtil.substitute_from_node_list(input_string, node_name, nodes)    
 
 
@@ -150,7 +150,5 @@ class SloeOutputUtil(object):
         value = cls.substitute_from_tree(value, "sourcetree", source_album, item)
         value = cls.substitute_from_tree(value, "desttree", dest_album, item)
         replacements = {}
-        
-        replacements.update(cls.replacements_for_item(source_album, dest_album, source_item, dest_item))
-        
+         
         return SloeUtil.substitute_vars(value, replacements)
