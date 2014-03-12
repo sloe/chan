@@ -12,6 +12,7 @@ from sloeitem import SloeItem
 from sloeremoteitem import SloeRemoteItem
 from sloetree import SloeTree
 from sloetreeutil import SloeTreeUtil
+from sloeutil import SloeUtil
 from sloevideoutil import SloeVideoUtil
 
 class SloeOutputUtil(object):
@@ -47,16 +48,8 @@ class SloeOutputUtil(object):
             "subtree" : item._subtree,
             }
         
-        while True:
-            match = re.match(r'(.*){(\w*)}(.*)', output_path)
-            if not match:
-                break
-            name = match.group(2)
-            if name not in replacements:
-                raise SloeError("No substitution variable {%s} - options are %s" % (name, ",".join(replacements.keys())))
-            output_path = match.group(1) + replacements[name] + match.group(3)
-    
-        return output_path
+
+        return SloeUtil.substitute_vars(output_path, replacements)
     
                 
     @classmethod
@@ -96,9 +89,7 @@ class SloeOutputUtil(object):
         
         
     @classmethod
-    def create_remoteitem_ini(cls, item, transferspec, remote_id, remote_url):
-        parent_album = SloeTreeUtil.find_album_by_uuid(item._parent_album_uuid)
-        
+    def find_remoteitem(cls, item, transferspec):
         common_id = "I=%s,T=%s" % (item.uuid, transferspec.uuid)
         spec = {
             "_primacy" : item._primacy,
@@ -108,14 +99,58 @@ class SloeOutputUtil(object):
             "name" : item.name
         }
         existing_remoteitem = SloeTreeUtil.find_remoteitem_by_spec(spec)
-        logging.info("existing remoteitem=%s"% pformat(existing_remoteitem))
-        spec.update({
-            "remote_id": remote_id,
-            "remote_url": remote_url            
-        })
         remoteitem = SloeRemoteItem()
-        remoteitem.create_new(existing_remoteitem, spec)
+        remoteitem.create_new(existing_remoteitem, spec)        
+        return remoteitem
+    
         
+    @classmethod
+    def create_remoteitem_ini(cls, item, remoteitem):
+        parent_album = SloeTreeUtil.find_album_by_uuid(item._parent_album_uuid)
         parent_album.add_child_remoteitem(remoteitem)
         remoteitem.save_to_file()
         
+    
+    
+    @classmethod
+    def substitute_from_tree(cls, input_string, node_name, parent_album, item):
+        nodes = [item]
+        for album in SloeTreeUtil.walk_parents(parent_album):
+            nodes.append(album)
+            
+        return SloeUtil.substitute_from_node_list(input_string, node_name, nodes)    
+
+
+    @classmethod
+    def get_item_description(cls, item, remoteitem, transferspec):
+        replacements = {}
+        
+        replacements.update(cls.replacements_for_item(item))
+        
+        return SloeUtil.substitute_vars(transferspec.description_merge, replacements)
+        
+
+    @classmethod
+    def get_item_title(cls, item, remoteitem, transferspec):
+        extracted = SloeUtil.extract_common_id(item.common_id)
+        genspec = SloeTreeUtil.find_genspec(SloeTree.inst().root_album, extracted["G"])
+        source_item = SloeTreeUtil.find_item(SloeTree.inst().root_album, extracted["I"])
+        outputspec = SloeTreeUtil.find_outputspec(SloeTree.inst().root_album, extracted["O"])
+        
+        dest_album = SloeTreeUtil.find_album_by_uuid(item._parent_album_uuid)
+        source_album = SloeTreeUtil.find_album_by_uuid(dest_album.source_album_uuid)
+        
+        value = transferspec.title_merge
+        value = SloeUtil.substitute_from_node_list(value, "destitem", item)
+        value = SloeUtil.substitute_from_node_list(value, "sourceitem", source_item)
+        value = SloeUtil.substitute_from_node_list(value, "destalbum", dest_album)
+        value = SloeUtil.substitute_from_node_list(value, "sourcealbum", source_album)
+        value = SloeUtil.substitute_from_node_list(value, "genspec", genspec)
+        value = SloeUtil.substitute_from_node_list(value, "outputspec", outputspec)
+        value = cls.substitute_from_tree(value, "sourcetree", source_album, item)
+        value = cls.substitute_from_tree(value, "desttree", dest_album, item)
+        replacements = {}
+        
+        replacements.update(cls.replacements_for_item(source_album, dest_album, source_item, dest_item))
+        
+        return SloeUtil.substitute_vars(value, replacements)

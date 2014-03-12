@@ -108,7 +108,7 @@ class SloePluginTreeCommands(object):
         work_manager = sloelib.SloeWorkManager()
         (work, stats) = work_manager.get_all_work(params)
         for job in work:
-            extracted = sloelib.SloeExecUtil.extract_common_id(job.common_id)
+            extracted = sloelib.SloeUtil.extract_common_id(job.common_id)
             item_uuid = extracted["I"]
             album, item = sloelib.SloeTreeUtil.find_album_and_item(item_uuid)
             print "Render item pri=%.0f '%s/%s' using outputspec %s" % (job.priority, item._subtree, item.name, extracted["O"])
@@ -123,7 +123,7 @@ class SloePluginTreeCommands(object):
         work_manager = sloelib.SloeWorkManager()
         (work, stats) = work_manager.get_all_transfer_work(params)
         for job in work:
-            extracted = sloelib.SloeExecUtil.extract_common_id(job.common_id)
+            extracted = sloelib.SloeUtil.extract_common_id(job.common_id)
             item_uuid = extracted["I"]
             album, item = sloelib.SloeTreeUtil.find_album_and_item(item_uuid)
             print "Transfer item pri=%.0f '%s/%s' using transferspec %s" % (job.priority, item._subtree, item.name, extracted["T"])

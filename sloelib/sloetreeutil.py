@@ -146,7 +146,7 @@ class SloeTreeUtil(object):
     
     @classmethod 
     def find_genspec(cls, album, obj_uuid):
-        for album in SloeTreeUtil.walk_parents(album):
+        for album in SloeTreeUtil.walk_albums(album):
             for obj in album.genspecs:
                 if obj.uuid == obj_uuid:
                     return obj
@@ -156,7 +156,7 @@ class SloeTreeUtil(object):
     
     @classmethod 
     def find_item(cls, album, obj_uuid):
-        for album in SloeTreeUtil.walk_parents(album):
+        for album in SloeTreeUtil.walk_albums(album):
             for obj in album.items:
                 if obj.uuid == obj_uuid:
                     return obj
@@ -176,7 +176,7 @@ class SloeTreeUtil(object):
         
     @classmethod 
     def find_outputspec(cls, album, obj_uuid):
-        for album in SloeTreeUtil.walk_parents(album):
+        for album in SloeTreeUtil.walk_albums(album):
             for obj in album.outputspecs:
                 if obj.uuid == obj_uuid:
                     return obj

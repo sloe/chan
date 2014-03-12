@@ -68,8 +68,8 @@ class SloeTreeNode(object):
         
         
     def update(self, param_dict):
-        self._d.update(param_dict
-                       )        
+        self._d.update(param_dict)        
+
 
     def create_from_ini_file(self, ini_filepath, error_info):
         with open(ini_filepath, "rb") as ini_fp:
@@ -87,7 +87,6 @@ class SloeTreeNode(object):
             self._d["_worth"] = rel_split[1]
         if len(rel_split) >= 3:
             self._d["_subtree"] = "/".join(rel_split[2:])
-        pass
 
 
     def create_from_ini_fp(self, ini_fp, error_info):

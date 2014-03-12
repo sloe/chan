@@ -3,7 +3,9 @@ import datetime
 import logging
 import os
 from pprint import pformat, pprint
+import re
 import socket
+import types
 import win32api
 import win32pdh
 
@@ -132,3 +134,59 @@ class SloeUtil(object):
         logging.info("Process holding lock (PID=%d) is still running" % lock_pid)
         return "locked"
         
+        
+    @classmethod
+    def substitute_vars(cls, input_string, replacements):
+        value = input_string[:]
+        for i in xrange(10000):
+            if i == 1000:
+                raise SloeError("Recursion in variable substitution for %s" % input_string)
+                
+            match = re.match(r'(.*){([\w.]+)}(.*)', value)
+            if not match:
+                break
+            name = match.group(2)
+            if name not in replacements:
+                raise SloeError("No substitution variable {%s} - options are %s" % (name, ",".join(replacements.keys())))
+            value = match.group(1) + replacements[name] + match.group(3)
+   
+        return value
+    
+    
+    @classmethod
+    def substitute_from_node_list(cls, input_string, node_name, node_or_nodes):
+        if isinstance(node_or_nodes, types.ListType) or isinstance(node_or_nodes, types.TupleType):
+            nodes = node_or_nodes
+        else:
+            nodes = (node_or_nodes,)
+            
+        value = input_string[:]
+        search_regexp = re.compile(r'(.*){' + node_name + r'\.(\w+)}(.*)')
+        for i in xrange(10000):
+            if i == 1000:
+                raise SloeError("Recursion in variable substitution for %s" % input_string)
+            match = search_regexp.match(value)
+            if not match:
+                break
+            name = match.group(2)
+            subst = None
+            for node in nodes:
+                subst = node.get(name, None)
+                if subst is not None:
+                    break
+            if subst is None:
+                raise SloeError("No substitution variable {%s}" % name)
+            logging.debug("Substituted %s for %s" % (subst, match.group(2)))
+            value = match.group(1) + subst + match.group(3)
+   
+        return value
+            
+            
+    @classmethod
+    def extract_common_id(cls, common_id):
+        extracted = {}
+        for section in common_id.split(","):
+            (tag, value) = section.split("=")
+            extracted[tag] = value
+            
+        return extracted

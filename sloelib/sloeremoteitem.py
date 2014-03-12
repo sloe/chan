@@ -31,8 +31,6 @@ class SloeRemoteItem(SloeTreeNode):
             self._d.update(spec)
             if "uuid" not in self._d:
                 self.create_uuid()
-            
-        self.verify_creation_data()
 
 
     @classmethod

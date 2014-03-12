@@ -34,6 +34,7 @@ class SloeTree:
     def reset(self):
         self.root_album = SloeAlbum()
         self.root_album.set_value("_location", "{root}")
+        self.root_album.set_value("description", "")
         self.root_album.set_value("name", "{root}")
         self.root_album.set_value("title", "")
         self.root_album.set_value("uuid", "0226ed39-1ea6-487d-8c3a-dfbc71d8df4a")

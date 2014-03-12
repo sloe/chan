@@ -24,21 +24,36 @@ class SloePluginYoutube(object):
 
 
     def do_transfer_job(self, item, transferspec):
-        session = sloeyoutube.SloeYouTubeSession("upload")
-        spec = {
-            "category": "17",
-            "description": "Sloecoach test video (auto)",
-            "filepath": item.get_file_path(),
-            "privacy": "unlisted",
-            "title": item.name
-        }
-        try:            
-            remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(session, spec)
+        
+
+        try:
+            remoteitem = sloelib.SloeOutputUtil.find_remoteitem(item, transferspec)
+            tags = transferspec.get("tags", []) + ["OARSTACKID:I=%s,R=%s,T=%s" % (item.uuid, remoteitem.uuid, transferspec.uuid)]
             
-            remote_url = "http://youtu.be/%s" % remote_id
-            sloelib.SloeOutputUtil.create_remoteitem_ini(item, transferspec, 
-                                                        remote_id, remote_url)
-        except Exception, e:
+            title = sloelib.SloeOutputUtil.get_item_title(item, remoteitem, transferspec)
+            description = "desc" # sloelib.SloeOutputUtil.get_item_description(item, transferspec)
+            youtube_spec = {
+                "category": "17",
+                "description": description,
+                "filepath": item.get_file_path(),
+                "privacy": "unlisted",
+                "tags": tags,
+                "title": title
+            }
+            logging.info("youtube_spec=%s" % pformat(youtube_spec))
+            youtube_session = sloeyoutube.SloeYouTubeSession("upload")
+            remote_id = "test" # sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
+
+            remoteitem.update({
+                "description": description,
+                "remote_id": remote_id,
+                "remote_url": "http://youtu.be/%s" % remote_id,
+                "title": title         
+            })
+            
+            remoteitem.verify_creation_data()
+            sloelib.SloeOutputUtil.create_remoteitem_ini(item, remoteitem)
+        except sloelib.SloeError, e:
             logging.error("Abandoned transfer attempt: %s" % str(e))
 
 
