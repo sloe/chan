@@ -50,16 +50,8 @@ class SloeTrees:
         return self.tree
 
 
-    @classmethod 
-    def walk_albums(cls, album):
-        yield album
-        for subalbum in album.subalbums:
-            for x in cls.walk_albums(subalbum):
-                yield x
-
-
     def find_album_or_none(self, album_uuid):
-        for album in self.walk_albums(self.tree.root_album):
+        for album in SloeTree.walk_albums():
             if album.uuid == album_uuid:
                 return album
 
@@ -67,7 +59,7 @@ class SloeTrees:
     
 
     def find_album_and_item(self, item_uuid):
-        for album in self.walk_albums(self.tree.get_root_album()):
+        for album in SloeTree.walk_albums():
             item = album.item_dict.get(item_uuid)
             if item:
                 return (album, item)

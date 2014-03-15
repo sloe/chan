@@ -42,7 +42,8 @@ class SloePluginYoutube(object):
             }
             logging.info("youtube_spec=%s" % pformat(youtube_spec))
             youtube_session = sloeyoutube.SloeYouTubeSession("upload")
-            remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
+            remote_id = "test"
+            # remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
 
             remoteitem.update({
                 "description": description,
@@ -52,7 +53,7 @@ class SloePluginYoutube(object):
             })
             
             remoteitem.verify_creation_data()
-            sloelib.SloeOutputUtil.create_remoteitem_ini(item, remoteitem)
+            # sloelib.SloeOutputUtil.create_remoteitem_ini(item, remoteitem)
         except sloelib.SloeError, e:
             logging.error("Abandoned transfer attempt: %s" % str(e))
 

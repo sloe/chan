@@ -1,4 +1,6 @@
 
+from pprint import pformat
+
 from sloeconfig import SloeConfig
 from sloeerror import SloeError
 from sloetreenode import SloeTreeNode

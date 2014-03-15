@@ -17,6 +17,7 @@ class SloePlugInManager(object):
     def __init__(self):
         self.plugins = {}
         self.commands = {}
+        self.varsubsts = {}
         
         
     @classmethod
@@ -40,6 +41,10 @@ class SloePlugInManager(object):
         for method in spec["methods"].keys():
             if method.startswith("command_"):
                 self.commands[method[8:]] = {
+                "plugin" : name,
+                "method" : method}
+            elif method.startswith("varsubst_"):
+                self.varsubsts[method[9:]] = {
                 "plugin" : name,
                 "method" : method}
             

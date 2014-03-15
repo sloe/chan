@@ -21,10 +21,10 @@ class SloeExecUtil(object):
     def get_specs_for_render_job(cls, jobspec):
         ids = SloeUtil.extract_common_id(jobspec.common_id)
         (album, item) = SloeTrees.inst().find_album_and_item(ids["I"])
-        outputspec = SloeTreeUtil.find_outputspec(album, ids["O"])
+        outputspec = SloeTreeUtil.find_outputspec(ids["O"])
         genspec_uuid = SloeTreeUtil.get_genspec_uuid_for_outputspec(outputspec)
             
-        genspec = SloeTreeUtil.find_genspec(album, genspec_uuid)
+        genspec = SloeTreeUtil.find_genspec(genspec_uuid)
         
         return (genspec, item, outputspec)
         

@@ -102,7 +102,7 @@ class SloePluginAfterEffects(object):
             conformed_frame_rate = video_avg_frame_rate
             output_frames_per_input_frame = (float(genspec.output_frame_rate) /
                 (float(conformed_frame_rate) * sloelib.SloeUtil.fraction_to_float(genspec.speed_factor)))
-            logging.info("Using frame rate %.2f from input file" % (video_avg_frame_rate, conformed_frame_rate))            
+            logging.info("Using frame rate %.2f from input file" % video_avg_frame_rate)          
         
 
         # Use math.trunc to round down, so when speeding up (speed_factor > 1) we don't generate

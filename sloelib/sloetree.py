@@ -182,11 +182,14 @@ class SloeTree:
 
 
     @classmethod 
-    def walk_albums(cls, album):
+    def walk_albums(cls, album=None):
+        if album is None:
+            album = cls.inst().root_album
         yield album
         for subalbum in album.subalbums:
             for x in cls.walk_albums(subalbum):
                 yield x
+
 
     @classmethod 
     def find_album_or_none(cls, album_uuid):

@@ -13,6 +13,7 @@ from sloeremoteitem import SloeRemoteItem
 from sloetree import SloeTree
 from sloetreeutil import SloeTreeUtil
 from sloeutil import SloeUtil
+from sloevarutil import SloeVarUtil
 from sloevideoutil import SloeVideoUtil
 
 class SloeOutputUtil(object):
@@ -113,36 +114,35 @@ class SloeOutputUtil(object):
     
     
     @classmethod
-    def substitute_from_tree(cls, input_string, node_name, parent_album, item):
-        nodes = []
+    def node_list_for_item(cls, parent_album, item):
+        node_list = []
         for album in SloeTreeUtil.walk_parents(parent_album):
-            nodes.append(album)
-        nodes.append(item)
-        return SloeUtil.substitute_from_node_list(input_string, node_name, nodes)    
+            node_list.append(album)
+        node_list.append(item)
+        return node_list
         
 
     @classmethod
-    def substitute_for_remote_item(cls, value, item, remoteitem, transferspec):
-        extracted = SloeUtil.extract_common_id(item.common_id)
-        genspec = SloeTreeUtil.find_genspec(SloeTree.inst().root_album, extracted["G"])
-        source_item = SloeTreeUtil.find_item(SloeTree.inst().root_album, extracted["I"])
-        outputspec = SloeTreeUtil.find_outputspec(SloeTree.inst().root_album, extracted["O"])
+    def substitute_for_remote_item(cls, value, final_item, remoteitem, transferspec):
+        extracted = SloeUtil.extract_common_id(final_item.common_id)
+        genspec = SloeTreeUtil.find_genspec(extracted["G"])
+        origin_item = SloeTreeUtil.find_item(extracted["I"])
+        outputspec = SloeTreeUtil.find_outputspec(extracted["O"])
         
-        dest_album = SloeTreeUtil.find_album_by_uuid(item._parent_album_uuid)
-        source_album = SloeTreeUtil.find_album_by_uuid(dest_album.source_album_uuid)
+        final_album = SloeTreeUtil.find_album_by_uuid(final_item._parent_album_uuid)
+        origin_album = SloeTreeUtil.find_album_by_uuid(final_album.source_album_uuid)
 
-        value = SloeUtil.substitute_from_node_list(value, "destitem", item)
-        value = SloeUtil.substitute_from_node_list(value, "sourceitem", source_item)
-        value = SloeUtil.substitute_from_node_list(value, "destalbum", dest_album)
-        value = SloeUtil.substitute_from_node_list(value, "sourcealbum", source_album)
-        value = SloeUtil.substitute_from_node_list(value, "genspec", genspec)
-        value = SloeUtil.substitute_from_node_list(value, "outputspec", outputspec)
-        value = SloeUtil.substitute_from_node_list(value, "remoteitem", remoteitem)
-        value = cls.substitute_from_tree(value, "sourcetree", source_album, item)
-        value = cls.substitute_from_tree(value, "desttree", dest_album, item)
-        replacements = {}
-         
-        value = SloeUtil.substitute_vars(value, replacements)
-        value = value.replace("\\n", "\n")
+        node_dict =  {
+            "localitem": final_item,
+            "originitem": origin_item,
+            "localalbum": final_album,
+            "originalbum": origin_album,
+            "genspec": genspec,
+            "outputspec": outputspec,
+            "remoteitem": remoteitem,
+            "origintree": cls.node_list_for_item(origin_album, origin_item),
+            "localtree": cls.node_list_for_item(final_album, final_item)
+        }
         
-        return value
+        return SloeVarUtil.substitute_from_node_dict(value, node_dict)
+        

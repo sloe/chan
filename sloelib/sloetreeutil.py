@@ -78,12 +78,13 @@ class SloeTreeUtil(object):
             
                 
     @classmethod 
-    def walk_albums(cls, album):
+    def walk_albums(cls, album=None):
+        if album is None:
+            album = SloeTree.inst().root_album
         yield album
         for subalbum in album.subalbums:
             for x in cls.walk_albums(subalbum):
                 yield x
-                
                 
                 
     @classmethod 
@@ -145,8 +146,8 @@ class SloeTreeUtil(object):
     
     
     @classmethod 
-    def find_genspec(cls, album, obj_uuid):
-        for album in SloeTreeUtil.walk_albums(album):
+    def find_genspec(cls, obj_uuid):
+        for album in SloeTreeUtil.walk_albums():
             for obj in album.genspecs:
                 if obj.uuid == obj_uuid:
                     return obj
@@ -155,8 +156,8 @@ class SloeTreeUtil(object):
     
     
     @classmethod 
-    def find_item(cls, album, obj_uuid):
-        for album in SloeTreeUtil.walk_albums(album):
+    def find_item(cls, obj_uuid):
+        for album in SloeTreeUtil.walk_albums():
             for obj in album.items:
                 if obj.uuid == obj_uuid:
                     return obj
@@ -166,7 +167,7 @@ class SloeTreeUtil(object):
       
     @classmethod 
     def find_album_and_item(cls, item_uuid):
-        for album in cls.walk_albums(SloeTree.inst().root_album):
+        for album in cls.walk_albums():
             item = album.item_dict.get(item_uuid)
             if item:
                 return (album, item)
@@ -175,8 +176,8 @@ class SloeTreeUtil(object):
         
         
     @classmethod 
-    def find_outputspec(cls, album, obj_uuid):
-        for album in SloeTreeUtil.walk_albums(album):
+    def find_outputspec(cls, obj_uuid):
+        for album in SloeTree.walk_albums():
             for obj in album.outputspecs:
                 if obj.uuid == obj_uuid:
                     return obj
@@ -196,7 +197,7 @@ class SloeTreeUtil(object):
 
     @classmethod
     def find_album_by_uuid(cls, uuid):
-        for album in SloeTreeUtil.walk_albums(SloeTree.inst().get_root_album()):
+        for album in SloeTreeUtil.walk_albums():
             if album.uuid == uuid:
                 return album
             
@@ -205,7 +206,7 @@ class SloeTreeUtil(object):
 
     @classmethod
     def find_album_by_spec(cls, spec):
-        for album in SloeTreeUtil.walk_albums(SloeTree.inst().get_root_album()):
+        for album in SloeTreeUtil.walk_albums():
             found = True
             for k, v in spec.iteritems():
                 if album.get(k, None) != v:
