@@ -1,5 +1,6 @@
 
 from sloealbum import SloeAlbum
+from sloebaseplugin import SloeBasePlugIn
 from sloeconfig import SloeConfig
 from sloeerror import SloeError
 from sloeexecutil import SloeExecUtil
@@ -23,7 +24,7 @@ from sloevideoutil import SloeVideoUtil
 from sloeworkmanager import SloeWorkManager
 
 
-__all__ = ["sloealbum", "sloeconfig", "sloeerror", "sloeexecutil", "sloegenspec", "sloeitem",
+__all__ = ["sloealbum", "sloebaseplugin", "sloeconfig", "sloeerror", "sloeexecutil", "sloegenspec", "sloeitem",
            "sloelocalexec", "sloeoutputspec", "sloeoutpututil", "sloepluginmanager",
            "sloeremoteitem", "sloerenderjob", "sloesandbox", "sloetransferjob",
            "sloetree", "sloetreenode", "sloetrees", "sloetreeutil", "sloeutil",

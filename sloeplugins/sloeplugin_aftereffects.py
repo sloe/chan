@@ -10,13 +10,14 @@ import sys
 import sloelib
 
 
-class SloePluginAfterEffects(object):
+class SloePluginAfterEffects(sloelib.SloeBasePlugIn):
+    
     def __init__(self):
         self.aerender = None
     
     
-    def derive_aerender_path(self):
-        for path in self.path_list():
+    def _derive_aerender_path(self):
+        for path in self._path_list():
             if os.path.isfile(path):
                 logging.info("Selected aerender binary %s" % path)
                 return path
@@ -25,7 +26,7 @@ class SloePluginAfterEffects(object):
         return None
     
     
-    def path_list(self):
+    def _path_list(self):
         glb_cfg = sloelib.SloeConfig.inst()
         aerender_path = glb_cfg.get_or_none("global", "aerender")
         config_paths = []
@@ -65,7 +66,7 @@ class SloePluginAfterEffects(object):
     def do_render_to_path(self, genspec, item, outputspec, final_output_path):
         logging.info("Performing render job for '%s'" % item.name)
         if self.aerender is None:
-            self.aerender = self.derive_aerender_path()
+            self.aerender = self._derive_aerender_path()
         if self.aerender is None:
             raise sloelib.SloeError("Unable to render - cannot find aerender.exe") 
             
@@ -164,19 +165,8 @@ class SloePluginAfterEffects(object):
         sandbox.destroy()
     
         sloelib.SloeOutputUtil.create_output_ini(genspec, item, outputspec)        
-    
-    @classmethod
-    def register(cls):
-        obj = SloePluginAfterEffects()
-        spec = {
-            "methods": {
-                "do_render_job" : cls.do_render_job
-            },
-            "object": obj
-        }
-        sloelib.SloePlugInManager.inst().register_plugin("aftereffects", spec)
-        
 
-SloePluginAfterEffects.register()
+
+SloePluginAfterEffects()
 
     

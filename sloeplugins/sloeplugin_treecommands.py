@@ -6,7 +6,7 @@ from pprint import pprint, pformat
 
 import sloelib
 
-class SloePluginTreeCommands(object):
+class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
     
     def command_dotrans(self, params, options):
         tree = sloelib.SloeTree.inst()
@@ -132,7 +132,7 @@ class SloePluginTreeCommands(object):
    
       
    
-    def process_obj(self, obj):
+    def _process_obj(self, obj):
         for k in ("primacy", "worth", "subtree"):
             if k in obj._d:
                 del obj._d[k]
@@ -143,37 +143,20 @@ class SloePluginTreeCommands(object):
         tree.load()
         for subtree, album, items in sloelib.SloeTreeUtil.walk_items(tree.root_album):
             for obj in items:
-                self.process_obj(obj)
+                self._process_obj(obj)
                 obj.save_to_file()
                 
             for obj in album.genspecs:
-                self.process_obj(obj)
+                self._process_obj(obj)
                 obj.save_to_file()
                 
             for obj in album.outputspecs:
-                self.process_obj(obj)
+                self._process_obj(obj)
                 obj.save_to_file()
                         
             if album.name != "{root}":
-                self.process_obj(album)
+                self._process_obj(album)
                 album.save_to_file()                
-                
-    
-    @classmethod
-    def register(cls):
-        obj = SloePluginTreeCommands()
-        spec = {
-            "methods": {
-                "command_dotrans" : cls.command_dotrans,
-                "command_dowork" : cls.command_dowork,
-                "command_lstrans" : cls.command_lstrans,
-                "command_lstree" : cls.command_lstree,
-                "command_lswork" : cls.command_lswork,
-                "command_refreshtree" : cls.command_refreshtree
-            },
-            "object": obj
-        }
-        sloelib.SloePlugInManager.inst().register_plugin("treecommands", spec)
         
 
-SloePluginTreeCommands.register()
+SloePluginTreeCommands("treecommands")

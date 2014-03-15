@@ -10,7 +10,7 @@ import subprocess
 
 import sloelib
 
-class SloePluginGenerateConfig(object):
+class SloePluginGenerateConfig(sloelib.SloeBasePlugIn):
    
     def command_generatecfg(self, params, options):
         sloelib.SloeTree.inst().load()
@@ -21,19 +21,19 @@ class SloePluginGenerateConfig(object):
         
         treeroot = sloelib.SloeConfig.get_global("treeroot")
         primacy_tree = os.path.join(treeroot, primacy)
-        self.process_dir("root", treeroot)        
-        self.process_dir(primacy, primacy_tree)        
+        self._process_dir("root", treeroot)        
+        self._process_dir(primacy, primacy_tree)        
         for worth in sloelib.SloeConfig.get_global("worths").split(","):
-            self.process_dir(worth, os.path.join(primacy_tree, worth))   
+            self._process_dir(worth, os.path.join(primacy_tree, worth))   
             
         for worth, walkroot in sloelib.SloeTrees.inst().get_treepaths(primacy).iteritems():
             logging.debug("generate_cfg walking tree directory %s" % walkroot)
             
-            self.process_dir(os.path.basename(walkroot), walkroot)
+            self._process_dir(os.path.basename(walkroot), walkroot)
 
             for dirpath, dirs, files in os.walk(walkroot, topdown=True, followlinks=False):
                 for _dir in dirs:
-                    self.process_dir(os.path.basename(_dir), os.path.join(dirpath, _dir))
+                    self._process_dir(os.path.basename(_dir), os.path.join(dirpath, _dir))
 
             subtree_root = sloelib.SloeTrees.inst().get_treeroot(primacy, worth)
 
@@ -49,10 +49,10 @@ class SloePluginGenerateConfig(object):
                             "_worth" : worth
                         }
                         if sloelib.SloeTreeUtil.object_matches_selector(spec, params):
-                            self.process_file(spec)                            
+                            self._process_file(spec)                            
 
 
-    def process_dir(self, name, full_path):
+    def _process_dir(self, name, full_path):
         logging.debug("Processing directory %s" % full_path)
         if not os.path.exists(full_path):
             os.makedirs(full_path)        
@@ -93,7 +93,7 @@ class SloePluginGenerateConfig(object):
                 album.save_to_file()
 
 
-    def process_file(self, spec):
+    def _process_file(self, spec):
         logging.debug("Processing file with spec %s" % repr(spec))
 
         current_tree = sloelib.SloeTree.inst()
@@ -104,18 +104,6 @@ class SloePluginGenerateConfig(object):
         item.update(sloelib.SloeVideoUtil.detect_video_params(item.get_file_path()))
         if not sloelib.SloeConfig.get_option("dryrun"):
             item.save_to_file()
-    
-    
-    @classmethod
-    def register(cls):
-        obj = SloePluginGenerateConfig()
-        spec = {
-            "methods": {
-                "command_generatecfg" : cls.command_generatecfg
-            },
-            "object": obj
-        }
-        sloelib.SloePlugInManager.inst().register_plugin("generatecfg", spec)
-        
 
-SloePluginGenerateConfig.register()
+
+SloePluginGenerateConfig("generatecfg")

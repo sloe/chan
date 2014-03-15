@@ -7,7 +7,13 @@ from pprint import pprint, pformat
 import sloelib
 from . import sloeyoutube
 
-class SloePluginYoutube(object):
+class SloePluginYoutube(sloelib.SloeBasePlugIn):
+    def __init__(self, *params):
+        self.methods = [
+            self.do_transfer_job
+        ]
+        sloelib.SloeBasePlugIn.__init__(self, *params)
+        
 
     def command_youtubeauth(self, params, options):
         session_r = sloeyoutube.SloeYouTubeSession("r")
@@ -58,18 +64,4 @@ class SloePluginYoutube(object):
             logging.error("Abandoned transfer attempt: %s" % str(e))
 
 
-    @classmethod
-    def register(cls):
-        obj = SloePluginYoutube()
-        spec = {
-            "methods": {
-                "command_youtubeauth" : cls.command_youtubeauth,
-                "command_youtubedumptree" : cls.command_youtubedumptree,
-                "do_transfer_job" : cls.do_transfer_job              
-            },
-            "object": obj
-        }
-        sloelib.SloePlugInManager.inst().register_plugin("youtube", spec)
-        
-
-SloePluginYoutube.register()
+SloePluginYoutube("youtube")

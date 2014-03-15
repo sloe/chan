@@ -10,8 +10,6 @@ import traceback
 from sloeconfig import SloeConfig
 from sloeerror import SloeError
 
-sloe_register_plugin = True
-
 class SloePlugInManager(object):
     instance = None
     def __init__(self):
@@ -62,5 +60,5 @@ class SloePlugInManager(object):
         obj = plugin.get("object", None)
         if obj is None:
             raise SloeError("Plugin name '%s' - no object defined" % name)        
-        return method(obj, *args, **keywords)
+        return method(*args, **keywords)
     
