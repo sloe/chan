@@ -18,17 +18,18 @@ class SloePluginVarSubst(sloelib.SloeBasePlugIn):
 
 
     def varsubst_join(self, params):
-        if len(params) != 2:
-            raise sloelib.SloeError("join() requires 2 parameters, %d given" % len(params))
+        if len(params) < 2:
+            raise sloelib.SloeError("join() requires at least 2 parameters, %d given" % len(params))
         joiners = params[0]
         if len(joiners) == 0:
             raise sloelib.SloeError("Join: at least one joining element must be given")
         ret_str = ""
-        for i, to_join in enumerate(params[1]):
-            if to_join is not None:
-                if len(ret_str) != 0:
-                    ret_str += joiners[min(i, len(joiners) - 1)]
-                ret_str += to_join
+        for param in params[1:]:
+            for i, to_join in enumerate(param):
+                if to_join is not None:
+                    if len(ret_str) != 0:
+                        ret_str += joiners[min(i, len(joiners) - 1)]
+                    ret_str += to_join
         return ret_str
         
 

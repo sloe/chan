@@ -13,16 +13,48 @@ from sloepluginmanager import SloePlugInManager
 
 class SloeVarUtil(object):
     @classmethod
+    def process_params(cls, input_string):
+        split_list = [""]
+        in_double_quotes = False
+        in_single_quotes = False
+        escape_next = False
+        for char in input_string:
+            if escape_next:
+                # This will excape quotes only
+                split_list[-1] += char
+                escape_next = False
+            elif char == "\\":
+                escape_next = True
+            elif char == "'" and not in_double_quotes:
+                split_list[-1] += char
+                in_single_quotes = not in_single_quotes
+            elif char == '"' and not in_single_quotes:
+                split_list[-1] += char
+                in_double_quotes = not in_double_quotes
+            elif char == "," and not in_double_quotes:
+                split_list.append("")
+            else:
+                split_list[-1] += char
+        
+        if in_double_quotes or in_double_quotes:
+            raise SloeError("Unmatched quotes in |%s|" % input_string)
+        if escape_next:
+            raise SloeError("Trailing escape charater \\ in |%s|" % input_string)
+        
+        ret_list = []
+        for param in split_list:
+            ret_list.append(param.strip())
+                
+        return ret_list
+    
+    
+    @classmethod
     def command_decode(cls, command_string):
         match = re.match(r'\s*(\w+)\((.*)\)\s*$', command_string)
         if match:
             command_name = match.group(1)
-            params = match.group(2).split(",")
-            processed_params = []
-            for param in params:
-                param = param.strip() # Remove spaces
-                processed_params.append(param)
-            return (command_name, processed_params)
+            params = cls.process_params(match.group(2))
+            return (command_name, params)
         return (None, None)
  
             
@@ -63,7 +95,7 @@ class SloeVarUtil(object):
         # The var_substitution_fn deals only with replacing single values from the node_dict
         def var_substitution_fn(var_string):
             subst = []
-            dot_split = var_string.split(".")
+            dot_split = var_string[:].strip().split(".")
             if len(dot_split) >= 2:
                 parent_name, field_name = dot_split
                 parent_node = node_dict.get(parent_name, None)
@@ -98,5 +130,6 @@ class SloeVarUtil(object):
                      "".join(cls.substitute_var_string(match.group(2), var_substitution_fn)) +
                      match.group(3))
 
-        logging.debug("Substituted %s for %s" % (ret_str, input_string))
+        if ret_str != input_string:
+            logging.debug("Substituted '%s' for '%s'" % (ret_str, input_string))
         return ret_str

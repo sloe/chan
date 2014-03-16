@@ -11,10 +11,10 @@ import sloelib
 
 
 class SloePluginAfterEffects(sloelib.SloeBasePlugIn):
-    
-    def __init__(self):
+ 
+    def __init__(self, *params):
         self.aerender = None
-    
+        sloelib.SloeBasePlugIn.__init__(self, *params)
     
     def _derive_aerender_path(self):
         for path in self._path_list():
@@ -167,6 +167,6 @@ class SloePluginAfterEffects(sloelib.SloeBasePlugIn):
         sloelib.SloeOutputUtil.create_output_ini(genspec, item, outputspec)        
 
 
-SloePluginAfterEffects()
+SloePluginAfterEffects("aftereffects")
 
     
