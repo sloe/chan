@@ -21,7 +21,10 @@ class SloeVarUtil(object):
         for char in input_string:
             if escape_next:
                 # This will excape quotes only
-                split_list[-1] += char
+                if char == "n":
+                    split_list[-1] += "\n"
+                else:
+                    split_list[-1] += char
                 escape_next = False
             elif char == "\\":
                 escape_next = True
@@ -112,6 +115,7 @@ class SloeVarUtil(object):
                             
             if len(subst) == 0:
                 raise SloeError("No variable %s in '%s'" % (var_string, input_string))
+            
             return subst
 
 
@@ -132,4 +136,4 @@ class SloeVarUtil(object):
 
         if ret_str != input_string:
             logging.debug("Substituted '%s' for '%s'" % (ret_str, input_string))
-        return ret_str
+        return ret_str.replace("\\n", "\n")

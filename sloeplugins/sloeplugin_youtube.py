@@ -53,7 +53,7 @@ class SloePluginYoutube(sloelib.SloeBasePlugIn):
             logging.info("youtube_spec=%s" % pformat(youtube_spec))
             youtube_session = sloeyoutube.SloeYouTubeSession("upload")
             remote_id = "test"
-            # remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
+            remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
 
             remoteitem.update({
                 "description": youtube_spec["description"],
@@ -63,7 +63,7 @@ class SloePluginYoutube(sloelib.SloeBasePlugIn):
             })
             
             remoteitem.verify_creation_data()
-            # sloelib.SloeOutputUtil.create_remoteitem_ini(item, remoteitem)
+            sloelib.SloeOutputUtil.create_remoteitem_ini(item, remoteitem)
             logging.debug("|YouTubeSpec|=%s" % pformat(youtube_spec))
         except sloelib.SloeError, e:
             logging.error("Abandoned transfer attempt: %s" % str(e))

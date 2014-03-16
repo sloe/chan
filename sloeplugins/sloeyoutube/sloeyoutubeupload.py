@@ -30,7 +30,7 @@ class SloeYouTubeUpload(object):
     def do_upload(cls, session, spec):
         tags = None
         if "tags" in spec:
-            tags = spec["tags"]
+            tags = spec["tags"].split(",")
 
         body=dict(
             snippet=dict(
