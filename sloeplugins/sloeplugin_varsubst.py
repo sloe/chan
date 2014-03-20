@@ -26,7 +26,7 @@ class SloePluginVarSubst(sloelib.SloeBasePlugIn):
         ret_str = ""
         for param in params[1:]:
             for i, to_join in enumerate(param):
-                if to_join is not None:
+                if to_join is not None and to_join != "":
                     if len(ret_str) != 0:
                         ret_str += joiners[min(i, len(joiners) - 1)]
                     ret_str += to_join

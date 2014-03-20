@@ -15,6 +15,7 @@ class SloeAlbum(SloeTreeNode):
         self.genspec_dict = {}
         self.item_dict = {}
         self.outputspec_dict = {}
+        self.playlist_dict = {}
         self.remoteitem_dict = {}
         self.transferspec_dict = {}
         self._album_names_to_uuids = {}
@@ -110,6 +111,11 @@ class SloeAlbum(SloeTreeNode):
 
 
     @property
+    def playlists(self):
+        return self.playlist_dict.values()
+    
+
+    @property
     def remoteitems(self):
         return self.remoteitem_dict.values()
 
@@ -141,6 +147,11 @@ class SloeAlbum(SloeTreeNode):
         obj.set_value("_parent_album_uuid", self._d["uuid"])
 
 
+    def add_child_playlist(self, obj):
+        self.playlist_dict[obj.uuid] = obj
+        obj.set_value("_parent_album_uuid", self._d["uuid"])
+        
+        
     def add_child_remoteitem(self, obj):
         self.remoteitem_dict[obj.uuid] = obj
         obj.set_value("_parent_album_uuid", self._d["uuid"])

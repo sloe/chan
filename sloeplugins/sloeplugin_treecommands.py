@@ -36,10 +36,9 @@ class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
             album_printed = False            
             
             def print_album():
-                
-                    print "%s%sAlbum: %s '%s' (%s)" % (album.uuid[:8], "-" * len(indent), album.name, album.title, album._location.replace("\\", "/"))
-                    if options.verbose:
-                        pprint(album._d)
+                print "%s%sAlbum: %s '%s' (%s)" % (album.uuid[:8], "-" * len(indent), album.name, album.title, album._location.replace("\\", "/"))
+                if options.verbose:
+                    pprint(album._d)
                     
             indent = "  " * subtree.count("/")
             try:
@@ -77,6 +76,16 @@ class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
                         if options.verbose:
                             pprint(obj._d)
                             
+
+                for obj in album.playlists:
+                    if sloelib.SloeTreeUtil.object_matches_selector(obj, params):
+                        if not album_printed:
+                            print_album()
+                            album_printed = True
+                        print "%s%s  Playlist: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
+                        if options.verbose:
+                            pprint(obj._d)
+
                             
                 for obj in album.remoteitems:
                     if sloelib.SloeTreeUtil.object_matches_selector(obj, params):
