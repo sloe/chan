@@ -15,18 +15,10 @@ from sloeoutputspec import SloeOutputSpec
 from sloeplaylist import SloePlaylist
 from sloeremoteitem import SloeRemoteItem
 from sloetransferspec import SloeTransferSpec
+from sloetreenode import SloeTreeNode
 
 class SloeTree:
     instance = None
-
-    album_ini_regex = re.compile(r"(.*)-ALBUM=([0-9A-Fa-f-]{36}).ini$")
-    genspec_ini_regex = re.compile(r"(.*)-GENSPEC=([0-9A-Fa-f-]{36})\.ini$")
-    item_ini_regex = re.compile(r"(.*)-ITEM=([0-9A-Fa-f-]{36})\.ini$")
-    outputspec_ini_regex = re.compile(r"(.*)-OUTPUTSPEC=([0-9A-Fa-f-]{36})\.ini$")
-    playlist_ini_regex = re.compile(r"(.*)-PLAYLIST=([0-9A-Fa-f-]{36})\.ini$")
-    remoteitem_ini_regex = re.compile(r"(.*)-REMOTEITEM=([0-9A-Fa-f-]{36})\.ini$")
-    transferspec_ini_regex = re.compile(r"(.*)-TRANSFERSPEC=([0-9A-Fa-f-]{36})\.ini$")
-    ini_regex = re.compile(r".*\.ini$")
 
     def __init__(self):
         self.loaded = False
@@ -84,109 +76,112 @@ class SloeTree:
         if not self.loaded:
             self.load()
 
+    album_ini_regex = re.compile(r"(.*)-ALBUM=([0-9A-Fa-f-]{36}).ini$")
+    genspec_ini_regex = re.compile(r"(.*)-GENSPEC=([0-9A-Fa-f-]{36})\.ini$")
+    item_ini_regex = re.compile(r"(.*)-ITEM=([0-9A-Fa-f-]{36})\.ini$")
+    outputspec_ini_regex = re.compile(r"(.*)-OUTPUTSPEC=([0-9A-Fa-f-]{36})\.ini$")
+    playlist_ini_regex = re.compile(r"(.*)-PLAYLIST=([0-9A-Fa-f-]{36})\.ini$")
+    remoteitem_ini_regex = re.compile(r"(.*)-REMOTEITEM=([0-9A-Fa-f-]{36})\.ini$")
+    transferspec_ini_regex = re.compile(r"(.*)-TRANSFERSPEC=([0-9A-Fa-f-]{36})\.ini$")
+        
+    
 
     def load(self):
         logging.debug("Loading tree")
+        treeroot = SloeConfig.get_global("treeroot")
         self.reset()
-        for primacy in SloeConfig.get_global("primacies").split(","):
-            for worth in SloeConfig.get_global("worths").split(","):
-                subdir_path = os.path.join(SloeConfig.get_global("treeroot"), primacy, worth)
-                logging.debug("Walking path %s" % subdir_path)
-                filecount = 0
-                bytecount = 0
+    
+        ini_regex = re.compile(r".*\.ini$")
+        sloe_ini_regex = re.compile(r"(.*)-([A-Z]+)=([0-9A-Fa-f-]{36})\.ini$")
 
-                for root, dirs, filenames in os.walk(subdir_path):
-                    album_for_path = None
-                    for filename in filenames:
-                        match = self.item_ini_regex.match(filename)
-                        if match:
-                            name = match.group(1)
-                            filename_uuid = match.group(2)
-                            subtree = string.replace(os.path.relpath(root, subdir_path), "\\", "/")
+        found_files = {}
+        found_uuids = {}
+        
+        # First pass - collect list of filenames
+        
+        for walkroot, dirs, filenames in os.walk(treeroot):
+            album_for_path = None
+            for filename in filenames:
+                full_path = os.path.join(walkroot, filename)
+                ini_match = ini_regex.match(filename)
+                if ini_match:
+                    sloe_match = sloe_ini_regex.match(filename)
+                    if not sloe_match:
+                        logging.warning("Suspicious malformed(?) .ini file %s" % os.path.join(walkroot, filename))
+                    else:   
+                        name, obj_type, filename_uuid = sloe_match.group(1, 2, 3)
+                        if obj_type not in found_files:
+                            found_files[obj_type] = []
+                        if filename_uuid in found_uuids:
+                            raise SloeError("Duplicate UUIDs found in filenames: %s and %s" % (found_uuids[filename_uuid], full_path))
+                        found_uuids[filename_uuid] = full_path
                             
-                            if album_for_path is None:
-                                album_for_path = self.load_album_for_path(root)
-                            bytecount += self.add_item_from_ini(primacy, worth, subdir_path, subtree, filename, name, filename_uuid, album_for_path)
-                            filecount += 1
-                        elif (self.ini_regex.match(filename) and not self.album_ini_regex.match(filename) and not
-                              self.outputspec_ini_regex.match(filename) and not self.playlist_ini_regex.match(filename) and not
-                              self.remoteitem_ini_regex.match(filename) and not self.transferspec_ini_regex.match(filename)):
-                            logging.warning("Suspicious misnamed(?) .ini file %s" % os.path.join(root, filename))
-                logging.info("Loaded %d item (%d MB) records from %s" % (filecount, bytecount / 2**20, subdir_path))
-
-
-    def load_album_for_path(self, full_path):
-        root_dir = SloeConfig.get_global("treeroot")
-        subtree = os.path.relpath(full_path, root_dir)
-        album_dirs = [""]
-        for _dir in subtree.replace("\\", "/").split("/"):
-            album_dirs.append(os.path.join(album_dirs[-1], _dir))
-
-        parent_album = self.root_album
-        album_found = None
-        for album_dir in album_dirs:
-            album_found = None
-            full_path = os.path.join(root_dir, album_dir)
-            (_, _, filenames) = next(os.walk(full_path))
-            for filename in filenames:
-                match = self.album_ini_regex.match(filename)
-                if match:
-                    if album_found:
-                        raise SloeError("Multiple ALBUM= .ini files in %s" % full_path)
-                    name = match.group(1)
-                    filename_uuid = match.group(2)
-                    subtree = album_dir.replace("\\", "/")
-                    album_from_ini = self.get_album_from_ini(album_dir, subtree, os.path.join(full_path, filename), name, filename_uuid, parent_album)
-                    album_found = parent_album.get_child_album_or_none(album_from_ini.uuid)
-                    if album_found is None:
-                        album_found = parent_album.add_child_obj(album_from_ini)
-
-            if not album_found:
-                logging.error("Missing ALBUM= .ini files in %s" % full_path)
-
-            for filename in filenames:
-                match = self.genspec_ini_regex.match(filename)
-                if match:
-                    name = match.group(1)
-                    filename_uuid = match.group(2)
-                    self.add_genspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)
-
-                match = self.outputspec_ini_regex.match(filename)                
-                if match:
-                    name = match.group(1)
-                    filename_uuid = match.group(2)
-                    self.add_outputspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)   
-
-                match = self.playlist_ini_regex.match(filename)
-                if match:
-                    name = match.group(1)
-                    filename_uuid = match.group(2)
-                    self.add_playlist_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)  
-
-
-                match = self.remoteitem_ini_regex.match(filename)
-                if match:
-                    name = match.group(1)
-                    filename_uuid = match.group(2)
-                    self.add_remoteitem_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)
+                        found_files[obj_type].append((full_path, name, filename_uuid))
                     
-                match = self.transferspec_ini_regex.match(filename)
-                if match:
-                    name = match.group(1)
-                    filename_uuid = match.group(2)
-                    self.add_transferspec_from_ini(os.path.join(full_path, filename), name, filename_uuid, album_found)                       
-
-            parent_album = album_found
-        return album_found
+                    
+                    #bytecount += self.add_item_from_ini(primacy, worth, subdir_path, subtree, filename, name, filename_uuid, album_for_path)
+                    #filecount += 1
 
 
-    def get_album_from_ini(self, subdir_path, subtree, filename, name, filename_uuid, parent_album):
-        full_path = os.path.join(subdir_path, subtree, filename)
+        #logging.info("Loaded %d item (%d MB) records from %s" % (filecount, bytecount / 2**20, subdir_path))
+        messages = []
+        for k in sorted(found_files.keys()):
+            messages.append("%s:%d" % (k, len(found_files[k])))
+        logging.info("Found objects: %s" % ", ".join(messages))
+        
+        # Load albums first as they contain the other objects.  The directory walks insures that
+        # parent albums will be processed before their subalbums
+
+
+        albums_by_subtree = { "": self.root_album}
+        
+        def parent_from_path(obj_path):
+            subtree = string.replace(os.path.relpath(dir_path, treeroot), "\\", "/")
+            parent_subtree = os.path.dirname(subtree)
+            parent_album = albums_by_subtree.get(parent_subtree, None)
+            if parent_album is None:
+                raise SloeError("Album has no parent in its parent directory: '%s'" % full_path)
+            return parent_album
+
+        for album_def in found_files["ALBUM"]:
+            full_path, name, filename_uuid = album_def
+            dir_path = os.path.dirname(full_path)
+            parent_album = parent_from_path(full_path)
+                    
+            new_album = self.get_album_from_ini(full_path, filename_uuid)
+            parent_album.add_child_obj(new_album)
+            logging.debug("Added album %s to album %s" % (new_album.get("_subtree", "!")+":"+new_album.name,
+                                                          parent_album.get("_subtree", "!")+":"+parent_album.name))
+            subtree = string.replace(os.path.relpath(dir_path, treeroot), "\\", "/")
+            albums_by_subtree[subtree] = new_album
+
+        # Albums done so remove from found file list
+        found_files["ALBUM"] = []
+            
+            
+        # Load items - file check and count has special handling
+        for item_def in found_files["ITEM"]:
+            full_path, name, filename_uuid = item_def
+            dest_album = parent_from_path(full_path)
+            self.add_item_from_ini(full_path, filename_uuid, dest_album)
+
+        # Items done so remove from found file list
+        found_files["ITEM"] = []
+        
+        
+        # Load other elements
+        for obj_type in sorted(found_files.keys()):
+            for obj_def in found_files[obj_type]:
+                full_path, name, filename_uuid = album_def
+
+
+    def get_album_from_ini(self, full_path, filename_uuid):
+        
         album = SloeAlbum.new_from_ini_file(full_path, "SloeTree.add_album_from_ini: " + full_path)
 
         if album.uuid != filename_uuid: # Both are strings
             raise SloeError("filename/content uuid mismatch %s != %s in %s" %
-                            (item.uuid, filename_uuid, full_path))
+                            (album.uuid, filename_uuid, full_path))
 
         return album
 
@@ -210,54 +205,24 @@ class SloeTree:
         return None
 
 
-    def add_item_from_ini(self, primacy, worth, subdir_path, subtree, filename, name, filename_uuid, dest_album):
-        full_path = os.path.join(subdir_path, subtree, filename)
-        item = SloeItem.new_from_ini_file(full_path, "SloeTree.add_item_from_ini: " + full_path)
-
-        if item.uuid != filename_uuid: # Both are strings
-            raise SloeError("filename/content uuid mismatch %s != %s in %s" %
-                            (item.uuid, filename_uuid, full_path))
+    def add_item_from_ini(self, full_path, filename_uuid, dest_album):
+        item = self.add_obj_from_ini("ITEM", full_path, filename_uuid, dest_album)
 
         filesize = 0
-        target_path = os.path.join(subdir_path, subtree, item.leafname)
+        target_path = os.path.join(os.path.dirname(full_path), item.leafname)
         filestat = os.stat(target_path)
         if os.path.stat.S_ISREG(filestat.st_mode):
             filesize = filestat.st_size
         else:
             logging.warning("Missing file %s" % target_path)
 
-                
-            
-        if dest_album is not None:
-            dest_album.add_child_obj(item)
         return filesize
 
 
-    def add_genspec_from_ini(self, full_path, name, filename_uuid, dest_album):
-        item = SloeGenSpec.new_from_ini_file(full_path, "SloeTree.add_genspec_from_ini: " + full_path)
-        dest_album.add_child_obj(item)
-
-
-    def add_outputspec_from_ini(self, full_path, name, filename_uuid, dest_album):
-        item = SloeOutputSpec.new_from_ini_file(full_path, "SloeTree.add_outputspec_from_ini: " + full_path)
-        dest_album.add_child_obj(item)
-
-
-    def add_playlist_from_ini(self, full_path, name, filename_uuid, dest_album):
-        item = SloePlaylist.new_from_ini_file(full_path, "SloeTree.add_playlist_from_ini: " + full_path)
-        dest_album.add_child_obj(item)
-
-
-    def add_remoteitem_from_ini(self, full_path, name, filename_uuid, dest_album):
-        item = SloeRemoteItem.new_from_ini_file(full_path, "SloeTree.add_remoteitem_from_ini: " + full_path)
-        dest_album.add_child_obj(item)
-        
-
-    def add_transferspec_from_ini(self, full_path, name, filename_uuid, dest_album):
-        item = SloeTransferSpec.new_from_ini_file(full_path, "SloeTree.add_transferspec_from_ini: " + full_path)
-        dest_album.add_child_obj(item)
-
-
-    def __repr__(self):
-        return ("|Tree|loaded=" + pformat(self.loaded) +
-                "\ntreedata=" + pformat(self.root_album))
+    def add_obj_from_ini(self, name, full_path, filename_uuid, dest_album):
+        obj = SloeTreeNode.get_factory(name).new_from_ini_file(full_path, "SloeTree.add_obj_from_ini: " + full_path)
+        if obj.uuid != filename_uuid: # Both are strings
+            raise SloeError("filename/content uuid mismatch %s != %s in %s" %
+                            (obj.uuid, filename_uuid, full_path))        
+        dest_album.add_child_obj(obj)
+        return obj

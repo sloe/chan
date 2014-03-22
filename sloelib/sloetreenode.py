@@ -12,7 +12,8 @@ from sloeerror import SloeError
 
 class SloeTreeNode(object):
     MANDATORY_ELEMENTS = ()
-
+    FACTORIES = {}
+    
     def __init__(self, _type, uuid_prefix = None):
         self._type = _type
         self._uuid_prefix = uuid_prefix
@@ -176,3 +177,12 @@ class SloeTreeNode(object):
             fp.write("# File saved at %s\n\n" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'))
             parser.write(fp)
             
+            
+    @classmethod
+    def add_factory(cls, tagname, classname):
+        cls.FACTORIES[tagname] = classname
+        
+        
+    @classmethod
+    def get_factory(cls, tagname):
+        return cls.FACTORIES[tagname]

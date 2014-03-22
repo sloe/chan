@@ -63,3 +63,7 @@ class SloeItem(SloeTreeNode):
 
     def __repr__(self):
         return "|Item|%s" % pformat(self._d)
+
+
+    
+SloeTreeNode.add_factory("ITEM", SloeItem)
