@@ -7,6 +7,7 @@ from sloeexecutil import SloeExecUtil
 from sloegenspec import SloeGenSpec
 from sloeitem import SloeItem
 from sloelocalexec import SloeLocalExec
+from sloeorder import SloeOrder
 from sloeoutputspec import SloeOutputSpec
 from sloeoutpututil import SloeOutputUtil
 from sloeplaylist import SloePlaylist
@@ -26,7 +27,7 @@ from sloeworkmanager import SloeWorkManager
 
 
 __all__ = ["sloealbum", "sloebaseplugin", "sloeconfig", "sloeerror", "sloeexecutil", "sloegenspec", "sloeitem",
-           "sloelocalexec", "sloeoutputspec", "sloeoutpututil", "sloeplaylist", "sloepluginmanager",
+           "sloelocalexec", "sloeorder", "sloeoutputspec", "sloeoutpututil", "sloeplaylist", "sloepluginmanager",
            "sloeremoteitem", "sloerenderjob", "sloesandbox", "sloetransferjob",
            "sloetree", "sloetreenode", "sloetrees", "sloetreeutil", "sloeutil",
            "sloevarutil", "sloevideoutil", "sloeworkmanager"]

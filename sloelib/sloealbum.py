@@ -9,16 +9,13 @@ from sloetreenode import SloeTreeNode
 
 class SloeAlbum(SloeTreeNode):
     MANDATORY_ELEMENTS = ("name", "uuid")
+    CONTENT_TYPES = ("genspec", "item", "outputspec", "playlist", "remoteitem", "album", "transferspec")
+    
     def __init__(self):
         SloeTreeNode.__init__(self, "album", "02")
-        self.subalbum_dict = {}
-        self.genspec_dict = {}
-        self.item_dict = {}
-        self.outputspec_dict = {}
-        self.playlist_dict = {}
-        self.remoteitem_dict = {}
-        self.transferspec_dict = {}
-        self._album_names_to_uuids = {}
+        for content_name in self.CONTENT_TYPES:
+            setattr(self, "%s_dict" % content_name, {})
+            setattr(self, "%ss" % content_name, [])
 
 
     @classmethod
@@ -72,98 +69,24 @@ class SloeAlbum(SloeTreeNode):
         self.create_uuid()
         self.verify_creation_data()
 
-    def get_child_album_by_name(self, name):
-        uuid = self._album_names_to_uuids.get(name, None)
-        if uuid is None:
-            raise SloeError("Missing album '%s'" % name)
-        return get_child_album(uuid)
-
-
-    def get_child_album(self, uuid):
-        album = self.subalbum_dict.get(uuid, None)
-        if album is None:
-            raise SloeError("Missing album '%s'" % name)
-        return album
-
 
     def get_child_album_or_none(self, uuid):
-        return self.subalbum_dict.get(uuid, None)
-
-
-    @property
-    def subalbums(self):
-        return self.subalbum_dict.values()
-
-
-    @property
-    def genspecs(self):
-        return self.genspec_dict.values()
-
-
-    @property
-    def items(self):
-        return self.item_dict.values()
-
-
-    @property
-    def outputspecs(self):
-        return self.outputspec_dict.values()
-
-
-    @property
-    def playlists(self):
-        return self.playlist_dict.values()
+        return self.album_dict.get(uuid, None)
     
 
-    @property
-    def remoteitems(self):
-        return self.remoteitem_dict.values()
+    def add_child_obj(self, obj):
+        obj_dict = getattr(self, "%s_dict" % obj.type, None)
+        obj_store = getattr(self, "%ss" % obj.type, None)
+        if obj_dict is None or obj_store is None:
+            raise SloeError("Album cannot store content of type %s" % obj.type)
 
-
-    @property
-    def transferspecs(self):
-        return self.transferspec_dict.values()
-   
-
-    def add_child_album(self, obj):
-        obj.set_value("_parent_album_uuid", self.uuid)
-        self.subalbum_dict[obj.uuid] = obj
-        self._album_names_to_uuids[obj.name] = obj.uuid
+        obj_dict[obj.uuid] = obj
+        obj_store.append(obj)
+        obj.set_value("_parent_album_uuid", self._d["uuid"])
         return obj
 
 
-    def add_child_genspec(self, obj):
-        self.genspec_dict[obj.uuid] = obj
-        obj.set_value("_parent_album_uuid", self._d["uuid"])
-
-
-    def add_child_item(self, obj):
-        self.item_dict[obj.uuid] = obj
-        obj.set_value("_parent_album_uuid", self._d["uuid"])
-
-
-    def add_child_outputspec(self, obj):
-        self.outputspec_dict[obj.uuid] = obj
-        obj.set_value("_parent_album_uuid", self._d["uuid"])
-
-
-    def add_child_playlist(self, obj):
-        self.playlist_dict[obj.uuid] = obj
-        obj.set_value("_parent_album_uuid", self._d["uuid"])
-        
-        
-    def add_child_remoteitem(self, obj):
-        self.remoteitem_dict[obj.uuid] = obj
-        obj.set_value("_parent_album_uuid", self._d["uuid"])
-
-
-    def add_child_transferspec(self, obj):
-        self.transferspec_dict[obj.uuid] = obj
-        obj.set_value("_parent_album_uuid", self._d["uuid"])
-
-
-
 #    def __repr__(self):
-#        return "|Album|ALBUMS=" + pformat(self.subalbum_dict) + "\nITEMS=" + pformat(self.item_dict)
+#        return "|Album|ALBUMS=" + pformat(self.album_dict) + "\nITEMS=" + pformat(self.item_dict)
 
 

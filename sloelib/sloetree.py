@@ -63,7 +63,7 @@ class SloeTree:
             for item in album.items:
                 if test_fn(item):
                     return item
-            for album in album.subalbums:
+            for album in album.albums:
                 found = recurse(album, found)
                 if found:
                     break
@@ -139,7 +139,7 @@ class SloeTree:
                     album_from_ini = self.get_album_from_ini(album_dir, subtree, os.path.join(full_path, filename), name, filename_uuid, parent_album)
                     album_found = parent_album.get_child_album_or_none(album_from_ini.uuid)
                     if album_found is None:
-                        album_found = parent_album.add_child_album(album_from_ini)
+                        album_found = parent_album.add_child_obj(album_from_ini)
 
             if not album_found:
                 logging.error("Missing ALBUM= .ini files in %s" % full_path)
@@ -196,7 +196,7 @@ class SloeTree:
         if album is None:
             album = cls.inst().root_album
         yield album
-        for subalbum in album.subalbums:
+        for subalbum in album.albums:
             for x in cls.walk_albums(subalbum):
                 yield x
 
@@ -229,33 +229,33 @@ class SloeTree:
                 
             
         if dest_album is not None:
-            dest_album.add_child_item(item)
+            dest_album.add_child_obj(item)
         return filesize
 
 
     def add_genspec_from_ini(self, full_path, name, filename_uuid, dest_album):
         item = SloeGenSpec.new_from_ini_file(full_path, "SloeTree.add_genspec_from_ini: " + full_path)
-        dest_album.add_child_genspec(item)
+        dest_album.add_child_obj(item)
 
 
     def add_outputspec_from_ini(self, full_path, name, filename_uuid, dest_album):
         item = SloeOutputSpec.new_from_ini_file(full_path, "SloeTree.add_outputspec_from_ini: " + full_path)
-        dest_album.add_child_outputspec(item)
+        dest_album.add_child_obj(item)
 
 
     def add_playlist_from_ini(self, full_path, name, filename_uuid, dest_album):
         item = SloePlaylist.new_from_ini_file(full_path, "SloeTree.add_playlist_from_ini: " + full_path)
-        dest_album.add_child_outputspec(item)
+        dest_album.add_child_obj(item)
 
 
     def add_remoteitem_from_ini(self, full_path, name, filename_uuid, dest_album):
         item = SloeRemoteItem.new_from_ini_file(full_path, "SloeTree.add_remoteitem_from_ini: " + full_path)
-        dest_album.add_child_remoteitem(item)
+        dest_album.add_child_obj(item)
         
 
     def add_transferspec_from_ini(self, full_path, name, filename_uuid, dest_album):
         item = SloeTransferSpec.new_from_ini_file(full_path, "SloeTree.add_transferspec_from_ini: " + full_path)
-        dest_album.add_child_transferspec(item)
+        dest_album.add_child_obj(item)
 
 
     def __repr__(self):

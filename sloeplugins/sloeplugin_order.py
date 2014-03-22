@@ -16,7 +16,7 @@ class SloePluginOrder(sloelib.SloeBasePlugIn):
         if match:
             initial_number = float(match.group(1))
         else:
-            logging.warn("Cannot calculate initial number from oject name '%s'" % obj.name)
+            logging.warn("Cannot calculate initial number from object name '%s'" % obj.name)
             initial_number = 0.0
         obj.set_value("_order_initial_number", initial_number)
         return initial_number

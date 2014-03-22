@@ -82,7 +82,7 @@ class SloeTreeUtil(object):
         if album is None:
             album = SloeTree.inst().root_album
         yield album
-        for subalbum in album.subalbums:
+        for subalbum in album.albums:
             for x in cls.walk_albums(subalbum):
                 yield x
                 
@@ -92,7 +92,7 @@ class SloeTreeUtil(object):
         new_subtree = subtree + [album.name]
         yield ("/".join(new_subtree), album, album.items)
             
-        for subalbum in album.subalbums:
+        for subalbum in album.albums:
             for x in cls.walk_items(subalbum, new_subtree):
                 yield x
                 
@@ -266,8 +266,8 @@ class SloeTreeUtil(object):
         if len(dest_treelist) == 0:
             # Reached the top of the subtree, so return the top-level album
             toplevel_album = SloeTree.inst().get_root_album()
-            if len(toplevel_album.subalbums) > 0:
-                toplevel_album = toplevel_album.subalbums[0]
+            if len(toplevel_album.albums) > 0:
+                toplevel_album = toplevel_album.albums[0]
             return toplevel_album
         if len(dest_treelist) >= 1:
             findspec["_primacy"] = dest_treelist[0]
@@ -288,7 +288,7 @@ class SloeTreeUtil(object):
         new_album = SloeAlbum()
         new_album.create_new(source_album.name, dest_path)
         new_album.update(findspec) 
-        dest_parent.add_child_album(new_album)
+        dest_parent.add_child_obj(new_album)
         new_album.save_to_file()        
         return new_album
     

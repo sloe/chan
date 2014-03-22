@@ -28,7 +28,7 @@ class SloeOutputUtil(object):
         for outputspec in album.get_outputspecs():
             pprint(outputspec)
 
-        for album in album.subalbums:
+        for album in album.albums:
             self._derive_outputdefs_recurse(indent+" ", album)
 
 
@@ -85,7 +85,7 @@ class SloeOutputUtil(object):
         new_item.create_new(existing_item, spec)
         
         new_item.update(SloeVideoUtil.detect_video_params(new_item.get_file_path()))
-        parent_album.add_child_item(new_item)
+        parent_album.add_child_obj(new_item)
         new_item.save_to_file()    
         
         
@@ -108,7 +108,7 @@ class SloeOutputUtil(object):
     @classmethod
     def create_remoteitem_ini(cls, item, remoteitem):
         parent_album = SloeTreeUtil.find_album_by_uuid(item._parent_album_uuid)
-        parent_album.add_child_remoteitem(remoteitem)
+        parent_album.add_child_obj(remoteitem)
         remoteitem.save_to_file()
         
     
