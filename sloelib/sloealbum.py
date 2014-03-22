@@ -86,6 +86,34 @@ class SloeAlbum(SloeTreeNode):
         return obj
 
 
+    def sort_items(self):
+        num_orders = len(self.orders)
+        if num_orders != 1:
+            logging.warning("Cannot sort album %s - no single order (%d present)" % (self.name, num_orders))
+            return
+        
+        item_check = self.item_dict.copy()
+        new_order = []
+        for item_uuid in self.orders[0].get_item_order():
+            if item_uuid not in item_check:
+                logging.error("Iten %s in order but not in album" % item_uuid)
+            else:
+                del item_check[item_uuid]
+                new_order.append(self.item_dict[item_uuid])
+                
+        num_remaining_items = len(item_check)
+        if num_remaining_items > 5:
+            logging.info("%d items in album but not in default order" % num_remaining_items)
+        elif num_remaining_items > 0:
+            logging.info("Items in album but not in default order: %s" % ", ".join(item_check.keys()))
+        self.items = new_order
+            
+            
+                
+            
+            
+        
+
 #    def __repr__(self):
 #        return "|Album|ALBUMS=" + pformat(self.album_dict) + "\nITEMS=" + pformat(self.item_dict)
 

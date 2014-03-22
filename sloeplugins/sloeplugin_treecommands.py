@@ -116,7 +116,7 @@ class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
                             pprint(obj._d)                
         
             except Exception, e:
-                logging.error("Missing attribute for %s" % album.get("name", "<Unknown>"))
+                logging.error("Missing attribute for %s: %s" % (album.get("name", "<Unknown>"), str(e)))
                 raise e   
    
    

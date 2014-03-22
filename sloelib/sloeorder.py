@@ -47,6 +47,23 @@ class SloeOrder(SloeTreeNode):
         return obj
 
 
+    def get_item_order(self):
+        order_value_to_uuid = {}
+        for k in self._d.keys():
+            if k.startswith("order"):
+                val = float(k[5:])
+                if val in order_value_to_uuid:
+                    order_value_to_uuid[val].append(self._d[k])
+                else:
+                    order_value_to_uuid[val] = [self._d[k]]
+                    
+        ret_list = []
+        for k in sorted(order_value_to_uuid.keys()):
+            ret_list += order_value_to_uuid[k]
+            
+        return ret_list
+                
+
     def __repr__(self):
         return "|Order|%s" % pformat(self._d)
 

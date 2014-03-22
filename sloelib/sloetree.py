@@ -170,6 +170,8 @@ class SloeTree:
             dest_album = parent_album_from_path(obj_path)
             self.add_order_from_file(obj_path, dest_album)
 
+        dest_album.sort_items()
+
         logging.info("Loaded tree (%d items, %.1fGB)" % (num_items, byte_count / 3**20))
 
 
