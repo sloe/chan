@@ -1,4 +1,5 @@
 
+import codecs
 import datetime
 import logging
 import os
@@ -211,3 +212,24 @@ class SloeUtil(object):
             extracted[tag] = value
             
         return extracted
+
+
+    @classmethod
+    def get_unicode_file_content(cls, full_path):
+        content = ""
+        with open(full_path, 'rb') as f:
+            content = f.read()
+           
+           
+        for encoding in ("utf-16", "utf-8-sig", "latin-1"):
+            try:
+                return codecs.decode(content, encoding)
+            except UnicodeDecodeError:
+                pass
+        raise SloeError("Unable to decode text file '%s'" % full_path)
+
+
+    @classmethod
+    def get_unicode_file_lines(cls, full_path):
+        decoded = cls.get_unicode_file_content(full_path)
+        return decoded.splitlines()

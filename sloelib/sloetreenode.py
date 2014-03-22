@@ -75,10 +75,13 @@ class SloeTreeNode(object):
     def create_from_ini_file(self, ini_filepath, error_info):
         with open(ini_filepath, "rb") as ini_fp:
             self.create_from_ini_fp(ini_fp, error_info)
+        self.add_filepath_info(ini_filepath)
+        
             
-        self._d["_location"] = os.path.dirname(ini_filepath)
+    def add_filepath_info(self, filepath):
+        self._d["_location"] = os.path.dirname(filepath)
         rel_path = os.path.relpath(
-            os.path.dirname(ini_filepath),
+            os.path.dirname(filepath),
             SloeConfig.get_global("treeroot"))
         rel_path = rel_path.replace("\\", "/")
         rel_split = rel_path.split("/")
@@ -185,4 +188,6 @@ class SloeTreeNode(object):
         
     @classmethod
     def get_factory(cls, tagname):
+        if tagname not in cls.FACTORIES:
+            raise SloeError("Unable to create object of type '%s' - no such type exists" % tagname)
         return cls.FACTORIES[tagname]

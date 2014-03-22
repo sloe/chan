@@ -87,6 +87,7 @@ class SloeTree:
 
         found_files = {}
         found_uuids = {}
+        order_files = []
         
         # First pass - collect list of filenames
         
@@ -106,8 +107,10 @@ class SloeTree:
                         if filename_uuid in found_uuids:
                             raise SloeError("Duplicate UUIDs found in filenames: %s and %s" % (found_uuids[filename_uuid], full_path))
                         found_uuids[filename_uuid] = full_path
-                            
                         found_files[obj_type].append((full_path, name, filename_uuid))
+                if filename == "order.txt":
+                    order_files.append(full_path)
+                    
 
         messages = []
         for k in sorted(found_files.keys()):
@@ -161,6 +164,11 @@ class SloeTree:
                 full_path, name, filename_uuid = obj_def
                 dest_album = parent_album_from_path(full_path)
                 self.add_obj_from_ini(obj_type, full_path, filename_uuid, dest_album)
+
+        # Load order files.  These are plain text files
+        for obj_path in order_files:
+            dest_album = parent_album_from_path(obj_path)
+            self.add_order_from_file(obj_path, dest_album)
 
         logging.info("Loaded tree (%d items, %.1fGB)" % (num_items, byte_count / 3**20))
 
@@ -216,3 +224,10 @@ class SloeTree:
                             (obj.uuid, filename_uuid, full_path))        
         dest_album.add_child_obj(obj)
         return obj
+
+
+    def add_order_from_file(self, full_path, dest_album):
+        obj = SloeTreeNode.get_factory("ORDER").new_from_order_file(full_path, dest_album, "SloeTree.add_order_from_file: " + full_path)
+        dest_album.add_child_obj(obj)
+        return obj
+    

@@ -9,7 +9,7 @@ from sloetreenode import SloeTreeNode
 
 class SloeAlbum(SloeTreeNode):
     MANDATORY_ELEMENTS = ("name", "uuid")
-    CONTENT_TYPES = ("genspec", "item", "outputspec", "playlist", "remoteitem", "album", "transferspec")
+    CONTENT_TYPES = ("album", "genspec", "item", "order", "outputspec", "playlist", "remoteitem", "transferspec")
     
     def __init__(self):
         SloeTreeNode.__init__(self, "album", "02")

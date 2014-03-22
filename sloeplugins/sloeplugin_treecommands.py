@@ -66,7 +66,16 @@ class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
                         print "%s%s  GenSpec: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
                         if options.verbose:
                             pprint(obj._d)
-        
+                    
+                for obj in album.orders:
+                    if sloelib.SloeTreeUtil.object_matches_selector(obj, params):
+                        if not album_printed:
+                            print_album()
+                            album_printed = True
+                        print "%s%sO Order: %s" % (obj.uuid[:8], "+" * len(indent), obj.name)
+                        if options.verbose:
+                            pprint(obj._d)        
+
                 for obj in album.outputspecs:
                     if sloelib.SloeTreeUtil.object_matches_selector(obj, params):
                         if not album_printed:
