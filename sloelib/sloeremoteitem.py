@@ -51,3 +51,7 @@ class SloeRemoteItem(SloeTreeNode):
 
     def __repr__(self):
         return "|RemoteItem|%s" % pformat(self._d)
+
+
+    
+SloeTreeNode.add_factory("REMOTEITEM", SloeRemoteItem)

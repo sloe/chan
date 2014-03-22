@@ -49,7 +49,7 @@ class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
                         
                 for item in items:
                     if sloelib.SloeTreeUtil.object_matches_selector(item, params):                        
-                        item_spec = ("%sx%s %sFPS %.2fs %.1fMB" %
+                        item_spec = ("%sx%s %sfps %.2fs %.1fMB" %
                                      (item.video_width, item.video_height, item.video_avg_frame_rate, float(item.video_duration), float(item.video_size) / 2**20))
                         if not album_printed:
                             print_album()

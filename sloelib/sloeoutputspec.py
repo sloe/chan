@@ -22,3 +22,6 @@ class SloeOutputSpec(SloeTreeNode):
 
     def __repr__(self):
         return "|OutputSpec|%s" % pformat(self._d)
+
+    
+SloeTreeNode.add_factory("OUTPUTSPEC", SloeOutputSpec)

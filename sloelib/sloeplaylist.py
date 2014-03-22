@@ -20,3 +20,7 @@ class SloePlaylist(SloeTreeNode):
 
     def __repr__(self):
         return "|SloePlaylist|%s" % pformat(self._d)
+
+
+    
+SloeTreeNode.add_factory("PLAYLIST", SloePlaylist)

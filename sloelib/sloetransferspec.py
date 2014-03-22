@@ -20,3 +20,6 @@ class SloeTransferSpec(SloeTreeNode):
 
     def __repr__(self):
         return "|TransferSpec|%s" % pformat(self._d)
+
+
+SloeTreeNode.add_factory("TRANSFERSPEC", SloeTransferSpec)

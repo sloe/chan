@@ -75,20 +75,11 @@ class SloeTree:
     def make(self):
         if not self.loaded:
             self.load()
-
-    album_ini_regex = re.compile(r"(.*)-ALBUM=([0-9A-Fa-f-]{36}).ini$")
-    genspec_ini_regex = re.compile(r"(.*)-GENSPEC=([0-9A-Fa-f-]{36})\.ini$")
-    item_ini_regex = re.compile(r"(.*)-ITEM=([0-9A-Fa-f-]{36})\.ini$")
-    outputspec_ini_regex = re.compile(r"(.*)-OUTPUTSPEC=([0-9A-Fa-f-]{36})\.ini$")
-    playlist_ini_regex = re.compile(r"(.*)-PLAYLIST=([0-9A-Fa-f-]{36})\.ini$")
-    remoteitem_ini_regex = re.compile(r"(.*)-REMOTEITEM=([0-9A-Fa-f-]{36})\.ini$")
-    transferspec_ini_regex = re.compile(r"(.*)-TRANSFERSPEC=([0-9A-Fa-f-]{36})\.ini$")
-        
     
 
     def load(self):
-        logging.debug("Loading tree")
         treeroot = SloeConfig.get_global("treeroot")
+        logging.info("Loading tree from %s" % treeroot)
         self.reset()
     
         ini_regex = re.compile(r".*\.ini$")
@@ -117,13 +108,7 @@ class SloeTree:
                         found_uuids[filename_uuid] = full_path
                             
                         found_files[obj_type].append((full_path, name, filename_uuid))
-                    
-                    
-                    #bytecount += self.add_item_from_ini(primacy, worth, subdir_path, subtree, filename, name, filename_uuid, album_for_path)
-                    #filecount += 1
 
-
-        #logging.info("Loaded %d item (%d MB) records from %s" % (filecount, bytecount / 2**20, subdir_path))
         messages = []
         for k in sorted(found_files.keys()):
             messages.append("%s:%d" % (k, len(found_files[k])))
@@ -132,47 +117,52 @@ class SloeTree:
         # Load albums first as they contain the other objects.  The directory walks insures that
         # parent albums will be processed before their subalbums
 
-
-        albums_by_subtree = { "": self.root_album}
-        
-        def parent_from_path(obj_path):
-            subtree = string.replace(os.path.relpath(dir_path, treeroot), "\\", "/")
-            parent_subtree = os.path.dirname(subtree)
-            parent_album = albums_by_subtree.get(parent_subtree, None)
-            if parent_album is None:
-                raise SloeError("Album has no parent in its parent directory: '%s'" % full_path)
-            return parent_album
+        albums_by_subpath = { "": self.root_album}
 
         for album_def in found_files["ALBUM"]:
             full_path, name, filename_uuid = album_def
             dir_path = os.path.dirname(full_path)
-            parent_album = parent_from_path(full_path)
-                    
+            # For albums, the parent is the album in the directory above.  For other objects,
+            # it's the album in the current directory
+            subtree = string.replace(os.path.relpath(dir_path, treeroot), "\\", "/")
+            parent_subtree = os.path.dirname(subtree)
+            parent_album = albums_by_subpath.get(parent_subtree, None)
+            if parent_album is None:
+                raise SloeError("Album has no parent in its parent directory: '%s'" % full_path)                    
             new_album = self.get_album_from_ini(full_path, filename_uuid)
             parent_album.add_child_obj(new_album)
-            logging.debug("Added album %s to album %s" % (new_album.get("_subtree", "!")+":"+new_album.name,
-                                                          parent_album.get("_subtree", "!")+":"+parent_album.name))
-            subtree = string.replace(os.path.relpath(dir_path, treeroot), "\\", "/")
-            albums_by_subtree[subtree] = new_album
+            albums_by_subpath[subtree] = new_album
 
         # Albums done so remove from found file list
-        found_files["ALBUM"] = []
+        found_files["ALBUM"] = [] 
             
+        def parent_album_from_path(obj_path):
+            subtree = string.replace(os.path.relpath(os.path.dirname(obj_path), treeroot), "\\", "/")
+            parent_album = albums_by_subpath.get(subtree, None)
+            if parent_album is None:
+                raise SloeError("Object has no parent in its parent directory: '%s'" % full_path)
+            return parent_album            
             
         # Load items - file check and count has special handling
+        byte_count = 0
         for item_def in found_files["ITEM"]:
             full_path, name, filename_uuid = item_def
-            dest_album = parent_from_path(full_path)
-            self.add_item_from_ini(full_path, filename_uuid, dest_album)
+            dest_album = parent_album_from_path(full_path)
+            byte_count += self.add_item_from_ini(full_path, filename_uuid, dest_album)
+
 
         # Items done so remove from found file list
+        num_items = len(found_files["ITEM"])
         found_files["ITEM"] = []
-        
         
         # Load other elements
         for obj_type in sorted(found_files.keys()):
             for obj_def in found_files[obj_type]:
-                full_path, name, filename_uuid = album_def
+                full_path, name, filename_uuid = obj_def
+                dest_album = parent_album_from_path(full_path)
+                self.add_obj_from_ini(obj_type, full_path, filename_uuid, dest_album)
+
+        logging.info("Loaded tree (%d items, %.1fGB)" % (num_items, byte_count / 3**20))
 
 
     def get_album_from_ini(self, full_path, filename_uuid):
@@ -219,8 +209,8 @@ class SloeTree:
         return filesize
 
 
-    def add_obj_from_ini(self, name, full_path, filename_uuid, dest_album):
-        obj = SloeTreeNode.get_factory(name).new_from_ini_file(full_path, "SloeTree.add_obj_from_ini: " + full_path)
+    def add_obj_from_ini(self, obj_type, full_path, filename_uuid, dest_album):
+        obj = SloeTreeNode.get_factory(obj_type).new_from_ini_file(full_path, "SloeTree.add_obj_from_ini: " + full_path)
         if obj.uuid != filename_uuid: # Both are strings
             raise SloeError("filename/content uuid mismatch %s != %s in %s" %
                             (obj.uuid, filename_uuid, full_path))        
