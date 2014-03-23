@@ -11,6 +11,7 @@ import sloelib
 class SloeYouTubeItem(object):
     ID_TAG_PREFIX = u"sloeid="
     def __init__(self, spec):
+        raise sloelib.SloeError("Out of date code")
         self.spec = spec
 
     def get(self, name):

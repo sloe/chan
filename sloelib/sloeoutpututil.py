@@ -10,6 +10,7 @@ from sloeconfig import SloeConfig
 from sloeerror import SloeError
 from sloeitem import SloeItem
 from sloeremoteitem import SloeRemoteItem
+from sloeremoteplaylist import SloeRemotePlaylist
 from sloetree import SloeTree
 from sloetreeutil import SloeTreeUtil
 from sloeutil import SloeUtil
@@ -106,19 +107,42 @@ class SloeOutputUtil(object):
     
         
     @classmethod
+    def find_remoteplaylist(cls, playlist):
+        common_id = "P=%s" % (playlist.uuid)
+        spec = {
+            "_primacy" : playlist._primacy,
+            "_worth" : playlist._worth,
+            "_subtree" : playlist._subtree,
+            "common_id" : common_id,
+            "name" : playlist.name
+        }
+        existing_remoteplaylist = SloeTreeUtil.find_remoteplaylist_by_spec(spec)
+        remoteplaylist = SloeRemotePlaylist()
+        remoteplaylist.create_new(existing_remoteplaylist, spec)        
+        return remoteplaylist
+    
+        
+    @classmethod
     def create_remoteitem_ini(cls, item, remoteitem):
         parent_album = SloeTreeUtil.find_album_by_uuid(item._parent_album_uuid)
         parent_album.add_child_obj(remoteitem)
         remoteitem.save_to_file()
         
     
+    @classmethod
+    def create_remoteplaylist_ini(cls, playlist, remoteplaylist):
+        parent_album = SloeTreeUtil.find_album_by_uuid(playlist._parent_album_uuid)
+        parent_album.add_child_obj(remoteplaylist)
+        remoteplaylist.save_to_file()
+        
     
     @classmethod
     def node_list_for_item(cls, parent_album, item):
         node_list = []
         for album in SloeTreeUtil.walk_parents(parent_album):
             node_list.append(album)
-        node_list.append(item)
+        if item is not None:
+            node_list.append(item)
         return node_list
         
 
@@ -146,3 +170,19 @@ class SloeOutputUtil(object):
         
         return SloeVarUtil.substitute_from_node_dict(value, node_dict)
         
+
+    @classmethod
+    def substitute_for_remote_playlist(cls, value, final_playlist, remoteplaylist):
+
+        final_album = SloeTreeUtil.find_album_by_uuid(final_playlist._parent_album_uuid)
+        origin_album = SloeTreeUtil.find_album_by_uuid(final_album.source_album_uuid)
+
+        node_dict =  {
+            "localalbum": final_album,
+            "originalbum": origin_album,
+            "remoteplaylist": remoteplaylist,
+            "origintree": cls.node_list_for_item(origin_album, None),
+            "localtree": cls.node_list_for_item(final_album, final_playlist)
+        }
+        
+        return SloeVarUtil.substitute_from_node_dict(value, node_dict)

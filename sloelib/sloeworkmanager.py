@@ -107,6 +107,7 @@ class SloeWorkManager(object):
                 name="transferitem %s" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
                 common_id=common_id,
                 leafname="+transferjob,%s" % common_id,
+                payload_type="item",
                 priority=transferspec.priority,
                 transfer_type = transferspec.transfer_type
             )
@@ -146,5 +147,66 @@ class SloeWorkManager(object):
                         
         sorted_work = reversed(sorted(work, key=lambda x: x.get("priority", 0.0)))
         logging.debug("get_all_transfer_work done")
+        
+        return (sorted_work, stats)        
+
+
+    def get_work_for_playlist(self, album, playlist):
+        work = []
+        stats_todo = 0
+        stats_done = 0
+            
+        common_id = "P=%s" % playlist.uuid
+        found_item = SloeTreeUtil.find_remoteplaylist_by_spec({
+            "common_id": common_id
+        })
+        if found_item is not None:
+            stats_done += 1
+        else:
+            stats_todo += 1
+            workspec = SloeTransferJob()
+            workspec.set_values(
+                name="transferplaylist %s" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+                common_id=common_id,
+                leafname="+transferjob,%s" % common_id,
+                payload_type="playlist",
+                priority=playlist.priority,
+                transfer_type = playlist.transfer_type
+            )
+            workspec.create_uuid()
+            workspec.verify_creation_data()
+            work.append(workspec)
+        
+        stats = {
+        "todo" : stats_todo,
+        "done" : stats_done
+        }
+        return (work, stats)
+    
+
+    def get_all_playlist_work(self, selectors):
+        work = []
+        stats = {
+            "todo" : 0,
+            "done" : 0
+        }
+        root_album = SloeTree.inst().root_album
+        logging.debug("get_all_playlist_work in %s" % root_album.name)
+        for album in SloeTreeUtil.walk_albums():
+            logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
+        
+            for playlist in album.playlists:
+                if SloeTreeUtil.object_matches_selector(playlist, selectors):
+
+                        (work_for_item, stats_for_item) = self.get_work_for_playlist(album, playlist)
+                        work += work_for_item
+                        
+                        for k in stats.keys():
+                            stats[k] += stats_for_item[k]                        
+
+                    
+                        
+        sorted_work = reversed(sorted(work, key=lambda x: x.get("priority", 0.0)))
+        logging.debug("get_all_playlist_work done")
         
         return (sorted_work, stats)        

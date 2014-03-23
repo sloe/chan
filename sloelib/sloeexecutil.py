@@ -4,6 +4,7 @@ import os
 from pprint import pformat, pprint
 
 from sloeconfig import SloeConfig
+from sloetreenode import SloeTreeNode
 from sloetrees import SloeTrees
 from sloetreeutil import SloeTreeUtil
 from sloeutil import SloeUtil
@@ -30,10 +31,17 @@ class SloeExecUtil(object):
         
     
     @classmethod   
-    def get_specs_for_transfer_job(cls, jobspec):
+    def get_specs_for_item_transfer_job(cls, jobspec):
         ids = SloeUtil.extract_common_id(jobspec.common_id)
         (album, item) = SloeTrees.inst().find_album_and_item(ids["I"])
         transferspec = SloeTreeUtil.find_transferspec(album, ids["T"])
         
         return (item, transferspec)
+ 
+        
+    @classmethod   
+    def get_specs_for_playlist_transfer_job(cls, jobspec):
+        ids = SloeUtil.extract_common_id(jobspec.common_id)
+        playlist = SloeTreeNode.get_object_by_uuid(ids["P"])
+        return playlist
         

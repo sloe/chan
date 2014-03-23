@@ -195,6 +195,16 @@ class SloeTreeUtil(object):
         raise SloeError("TransferSpec not found for %s" % obj_uuid)
     
 
+    @classmethod 
+    def find_playlist(cls, album, obj_uuid):
+        for album in SloeTreeUtil.walk_parents(album):
+            for obj in album.playlists:
+                if obj.uuid == obj_uuid:
+                    return obj
+                    
+        raise SloeError("Playlist not found for %s" % obj_uuid)
+    
+
     @classmethod
     def find_album_by_uuid(cls, uuid):
         for album in SloeTreeUtil.walk_albums():
@@ -251,6 +261,24 @@ class SloeTreeUtil(object):
                     
                 if found:    
                     return remoteitem
+            
+        return None
+
+
+    @classmethod
+    def find_remoteplaylist_by_spec(cls, spec):
+        for _, album, _ in SloeTreeUtil.walk_items(SloeTree.inst().get_root_album()):
+            
+            for remoteplaylist in album.remoteplaylists:
+                found = True
+                
+                for k, v in spec.iteritems():
+                    if remoteplaylist.get(k, None) != v:
+                        found = False
+                        break
+                    
+                if found:    
+                    return remoteplaylist
             
         return None
 

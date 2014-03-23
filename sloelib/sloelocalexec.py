@@ -27,13 +27,25 @@ class SloeLocalExec(object):
                     outputspec=outputspec)
         elif jobspec.type == "transferjob":
             if jobspec.transfer_type == "youtube":
-                item, transferspec = SloeExecUtil.get_specs_for_transfer_job(jobspec)
-                SloePlugInManager.inst().call_plugin(
-                    "youtube",
-                    "do_transfer_job",
-                    item=item,
-                    transferspec=transferspec)        
-            
+                if jobspec.payload_type == "item":                    
+                    item, transferspec = SloeExecUtil.get_specs_for_item_transfer_job(jobspec)
+                    SloePlugInManager.inst().call_plugin(
+                        "youtube",
+                        "do_item_transfer_job",
+                        item=item,
+                        transferspec=transferspec)
+                elif jobspec.payload_type == "playlist":                    
+                    playlist = SloeExecUtil.get_specs_for_playlist_transfer_job(jobspec)
+                    SloePlugInManager.inst().call_plugin(
+                        "youtube",
+                        "do_playlist_transfer_job",
+                        playlist=playlist)
+                else:
+                    raise SloeError("Unknown youtube transfer job payload type %s" % jobspec.payload_type)
+            else:
+                raise SloeError("Unknown youtube transfer type %s" % jobspec.transfer_type)                       
+        else:
+            raise SloeError("Unknown jobspec type %s" % jobspec.type)            
             
         
             

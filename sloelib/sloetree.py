@@ -121,14 +121,20 @@ class SloeTree:
         # parent albums will be processed before their subalbums
 
         albums_by_subpath = { "": self.root_album}
-
+        # Using treeroot_parent avoids problems where an empty subtree is represented as '.'
+        treeroot_parent = os.path.dirname(treeroot)
+        
         for album_def in found_files["ALBUM"]:
             full_path, name, filename_uuid = album_def
             dir_path = os.path.dirname(full_path)
             # For albums, the parent is the album in the directory above.  For other objects,
             # it's the album in the current directory
-            subtree = string.replace(os.path.relpath(dir_path, treeroot), "\\", "/")
+            subtree = string.replace(os.path.relpath(dir_path, treeroot_parent), "\\", "/")
+            if subtree == ".":
+                subtree = ""
             parent_subtree = os.path.dirname(subtree)
+            if parent_subtree == ".":
+                parent_subtree = ""
             parent_album = albums_by_subpath.get(parent_subtree, None)
             if parent_album is None:
                 raise SloeError("Album has no parent in its parent directory: '%s'" % full_path)                    
@@ -140,7 +146,7 @@ class SloeTree:
         found_files["ALBUM"] = [] 
             
         def parent_album_from_path(obj_path):
-            subtree = string.replace(os.path.relpath(os.path.dirname(obj_path), treeroot), "\\", "/")
+            subtree = string.replace(os.path.relpath(os.path.dirname(obj_path), treeroot_parent), "\\", "/")
             parent_album = albums_by_subpath.get(subtree, None)
             if parent_album is None:
                 raise SloeError("Object has no parent in its parent directory: '%s'" % full_path)

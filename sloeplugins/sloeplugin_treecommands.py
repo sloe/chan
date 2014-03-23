@@ -7,7 +7,17 @@ from pprint import pprint, pformat
 import sloelib
 
 class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
-    
+
+    def command_dolists(self, params, options):
+        tree = sloelib.SloeTree.inst()
+        tree.load() 
+        executor = sloelib.SloeLocalExec(tree)
+        work_manager = sloelib.SloeWorkManager()
+        selectors = params
+        work, stats = work_manager.get_all_playlist_work(selectors)
+        sloelib.SloeExecUtil.do_work(executor, work)
+        
+        
     def command_dotrans(self, params, options):
         tree = sloelib.SloeTree.inst()
         tree.load() 
