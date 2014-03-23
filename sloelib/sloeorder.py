@@ -64,6 +64,15 @@ class SloeOrder(SloeTreeNode):
         return ret_list
                 
 
+    def get_item_uuid_to_order_map(self):
+        item_order = self.get_item_order()
+        ret_map = {}
+        for i, u in enumerate(item_order):
+            ret_map[u] = i
+        
+        return ret_map
+
+
     def __repr__(self):
         return "|Order|%s" % pformat(self._d)
 

@@ -20,7 +20,7 @@ class SloePluginPlaylist(sloelib.SloeBasePlugIn):
                     print "%s%s  Playlist: %s '%s'" % (playlist.uuid[:8], " " * len(indent), playlist.get_full_subtree(), playlist.title)
                     cuurent_parant_uuid = None
                     for item in playlist.get_ordered_items():
-                        print "%s%s    Item: %s %s" % (item.uuid[:8], " " * len(indent), item.get_full_subtree(), item.name)
+                        print "%s%s    Item: %s %s" % (item.uuid[:8], " " * len(indent), item.get_full_subtree(), item.get("title", item.name))
                      
 
             except KeyboardInterrupt, e:
