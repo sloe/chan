@@ -13,6 +13,7 @@ from sloeerror import SloeError
 class SloeTreeNode(object):
     MANDATORY_ELEMENTS = ()
     FACTORIES = {}
+    UUID_LIB = {}
     
     def __init__(self, _type, uuid_prefix = None):
         self._type = _type
@@ -29,6 +30,15 @@ class SloeTreeNode(object):
             
         self._d["uuid"] = new_uuid
         
+
+    def add_to_library(self):
+        u = self._d.get("uuid", None)
+        if u is None:
+            raise SloeError("Cannot add item to library without UUID")
+        if u in self.UUID_LIB:
+            raise SloeError("Cannot add item '%s' to library - UUID already present" % u)
+        self.UUID_LIB[u] = self
+
 
     def get(self, name, default):
         node = object.__getattribute__(self, "_d")
@@ -93,6 +103,15 @@ class SloeTreeNode(object):
             self._d["_subtree"] = "/".join(rel_split[2:])
 
 
+
+    def get_full_subtree(self):
+        treelist = []
+        for elem in ("_primacy", "_worth", "_subtree"):
+            if elem in self._d:
+                treelist.append(self._d[elem])
+        return "/".join(treelist)
+    
+
     def create_from_ini_fp(self, ini_fp, error_info):
         self._d =  {
             "type": self._type
@@ -130,6 +149,7 @@ class SloeTreeNode(object):
             raise SloeError("%s (%s)" % (str(e), error_info))
 
         self._d.update(_d)
+        self.add_to_library()
 
 
     def verify_creation_data(self, creation_data=None):
@@ -179,7 +199,15 @@ class SloeTreeNode(object):
         with open(self.get_ini_filepath(), "wb") as fp:
             fp.write("# File saved at %s\n\n" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'))
             parser.write(fp)
-            
+ 
+
+    @classmethod
+    def get_object_by_uuid(cls, u):
+        obj = cls.UUID_LIB.get(u, None)
+        if obj is None:
+            raise SloeError("Cannot find object with UUID '%s'" % u)
+        return obj
+
             
     @classmethod
     def add_factory(cls, tagname, classname):

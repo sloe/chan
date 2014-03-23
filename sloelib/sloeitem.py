@@ -33,7 +33,8 @@ class SloeItem(SloeTreeNode):
             if "uuid" not in self._d:
                 self.create_uuid()
             
-        self.verify_creation_data()
+        self.verify_creation_data()        
+        self.add_to_library()        
 
 
     @classmethod

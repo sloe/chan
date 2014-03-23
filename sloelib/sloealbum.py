@@ -68,6 +68,7 @@ class SloeAlbum(SloeTreeNode):
         })
         self.create_uuid()
         self.verify_creation_data()
+        self.add_to_library()
 
 
     def get_child_album_or_none(self, uuid):
