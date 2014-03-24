@@ -70,7 +70,7 @@ class SloeWorkManager(object):
         root_album = SloeTree.inst().root_album
         logging.debug("get_all_work in %s" % root_album.name)
         for subtree, album, items in SloeTreeUtil.walk_items(root_album):
-            logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
+            # logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
             outputspecs = SloeTreeUtil.get_parent_outputspecs(album)
             for outputspec in outputspecs:
                 logging.debug("%s Scanning with OutputSpec: %s" % (outputspec.uuid, outputspec.name))
@@ -131,7 +131,7 @@ class SloeWorkManager(object):
         root_album = SloeTree.inst().root_album
         logging.debug("get_all_transfer_work in %s" % root_album.name)
         for subtree, album, items in SloeTreeUtil.walk_items(root_album):
-            logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
+            # logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
             transferspecs = SloeTreeUtil.get_parent_transferspecs(album)
             for transferspec in transferspecs:
                 logging.debug("%s Scanning with TransferSpec: %s" % (transferspec.uuid, transferspec.name))
@@ -160,7 +160,7 @@ class SloeWorkManager(object):
         found_item = SloeTreeUtil.find_remoteplaylist_by_spec({
             "common_id": common_id
         })
-        if found_item is not None:
+        if False: # found_item is not None:
             stats_done += 1
         else:
             stats_todo += 1
@@ -193,7 +193,7 @@ class SloeWorkManager(object):
         root_album = SloeTree.inst().root_album
         logging.debug("get_all_playlist_work in %s" % root_album.name)
         for album in SloeTreeUtil.walk_albums():
-            logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
+            # logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
         
             for playlist in album.playlists:
                 if SloeTreeUtil.object_matches_selector(playlist, selectors):
