@@ -43,7 +43,7 @@ class SloePlaylist(SloeTreeNode):
             extracted_remoteitem = SloeUtil.extract_common_id(remoteitem.common_id)
             add_item = True
             if selector is not None and not sloelib.SloeTreeUtil.object_matches_selector(remoteitem, params):
-                logging.debug("Rejected item '%s' - does not match selector" % remoteitem.name)
+                # logging.debug("Rejected item '%s' - does not match selector" % remoteitem.name)
                 add_item = False
             else:
                 final_item = SloeTreeNode.get_object_by_uuid(extracted_remoteitem["I"])
@@ -53,12 +53,11 @@ class SloePlaylist(SloeTreeNode):
                 genspec = SloeTreeNode.get_object_by_uuid(extracted_final["G"])
                 priority += genspec.priority
                 if selector_genspec_name is not None and selector_genspec_name != genspec.name:
-                    logging.debug("Rejected item '%s' - selector_genspec_name(%s) != genspec.name(%s)" % (remoteitem.name, selector_genspec_name, genspec.name))
+                    # logging.debug("Rejected item '%s' - selector_genspec_name(%s) != genspec.name(%s)" % (remoteitem.name, selector_genspec_name, genspec.name))
                     add_item = False
 
                         
             if add_item:
-                logging.debug("Added item '%s'" % remoteitem.name)
                 prioritised_items[priority].append(remoteitem)
         
         ret_items = []

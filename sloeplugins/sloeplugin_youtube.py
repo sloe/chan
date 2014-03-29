@@ -121,17 +121,22 @@ class SloePluginYoutube(sloelib.SloeBasePlugIn):
             for i in xrange(max(len(ordered_items), len(remote_playlistitems))):
                 prefix = "At position %d: " % (i+1)
                 if i < len(ordered_items) and i < len(remote_playlistitems):
-                    # Item is both local and remote, so operation is update
-                    logging.info("%sUpdating remote id %s item '%s'" % (prefix, remote_playlistitems[i], ordered_items[i].name))
-                    SloeYouTubePlaylist.do_update_playlistitem(youtube_session, youtube_playlistid, remote_playlistitems[i], ordered_items[i].remote_id, i)
+                    playlistitem_id, videoId, position = remote_playlistitems[i]
+                    if videoId == ordered_items[i].remote_id and position == i:
+                        logging.info("%sRemote item OK: %s" % (prefix, ordered_items[i].title))                        
+                    else:
+                        # Item is both local and remote, so operation is update
+                        logging.info("%sUpdating remote id %s item '%s'" % (prefix, playlistitem_id, ordered_items[i].name))
+                        SloeYouTubePlaylist.do_update_playlistitem(youtube_session, youtube_playlistid, playlistitem_id, ordered_items[i].remote_id, i)
                 elif i < len(ordered_items):
                     # Item is local but not remote, so operation is insert
                     logging.info("%sInserting item '%s'" % (prefix, ordered_items[i].name))
                     SloeYouTubePlaylist.do_insert_playlistitem(youtube_session, youtube_playlistid, ordered_items[i].remote_id, i)
                 elif i < len(remote_playlistitems):
                     # Item is remote but not local, so operation is delete
-                    logging.info("%sDeleting item remote id %s" % (prefix, remote_playlistitems[i]))
-                    SloeYouTubePlaylist.do_delete_playlistitem(youtube_session, remote_playlistitems[i])
+                    playlistitem_id, videoId, position = remote_playlistitems[i]
+                    logging.info("%sDeleting item remote id %s" % (prefix, playlistitem_id))
+                    SloeYouTubePlaylist.do_delete_playlistitem(youtube_session, playlistitem_id)
                 else:
                     raise SloeError("Logical error")
             

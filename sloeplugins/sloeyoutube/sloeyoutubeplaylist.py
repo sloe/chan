@@ -57,7 +57,7 @@ class SloeYouTubePlaylist(object):
 
         list_request = session().playlistItems().list(
             maxResults=50,
-            part="id",
+            part="id,snippet",
             playlistId=playlist_id
         )
         
@@ -66,9 +66,16 @@ class SloeYouTubePlaylist(object):
         while list_request:
             list_response = list_request.execute()
             for playlistitem in list_response[u"items"]:
-                ret_ids.append(playlistitem["id"])
+                playlistitem_id = playlistitem["id"]
+                snippet = playlistitem.get(u"snippet", {})
+                resourceId = snippet.get(u"resourceId", {})
+                videoId = resourceId.get(u"videoId", "")
+                position = snippet.get(u"position", None)
+                                                
+                ret_ids.append((playlistitem_id, videoId, position))
             if total_results is None:
-                total_results = list_response[u"pageInfo"][u"totalResults"]
+                pageInfo = list_response.get(u"pageInfo", {})
+                total_results = pageInfo.get(u"totalResults", None)
             list_request = session().playlistItems().list_next(list_request, list_response)
         
         if total_results != len(ret_ids) and none_if_error:
@@ -138,4 +145,16 @@ class SloeYouTubePlaylist(object):
             body=body
         )
 
-        return update_request.execute()
+        try:
+            update_request.execute()
+            
+        except HttpError, e:
+            # It's currently not possible to update a playlistitem with a new video ID.
+            # Thie response captures the error and performs a delete and insert instead
+            if e.resp.status == 400:
+                logging.info("Update failed so will delete and replace")
+            else:
+                raise
+
+        cls.do_delete_playlistitem(session, playlistitem_id)
+        cls.do_insert_playlistitem(session, playlist_id, video_id, position)
