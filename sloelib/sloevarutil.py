@@ -121,7 +121,7 @@ class SloeVarUtil(object):
 
         ret_str = input_string[:] # Don't overwrite the input string
         # Find string to substitute of the form #{something}
-        match_regexp = re.compile(r'(.*)#{([^}]+)}(.*)')
+        match_regexp = re.compile(r'(.*)#{([^}]+)}(.*)$', flags=re.DOTALL)
         
         for i in itertools.count():
             if i > 1000:
