@@ -198,11 +198,11 @@ class SloeWorkManager(object):
             for playlist in album.playlists:
                 if SloeTreeUtil.object_matches_selector(playlist, selectors):
 
-                        (work_for_item, stats_for_item) = self.get_work_for_playlist(album, playlist)
-                        work += work_for_item
-                        
-                        for k in stats.keys():
-                            stats[k] += stats_for_item[k]                        
+                    (work_for_item, stats_for_item) = self.get_work_for_playlist(album, playlist)
+                    work += work_for_item
+                    
+                    for k in stats.keys():
+                        stats[k] += stats_for_item[k]                        
 
                     
                         
@@ -210,3 +210,37 @@ class SloeWorkManager(object):
         logging.debug("get_all_playlist_work done")
         
         return (sorted_work, stats)        
+
+
+    def get_all_update_work(self, selectors):
+        remoteitem_uuids = []
+
+        root_album = SloeTree.inst().root_album
+        logging.debug("get_all_update_work in %s" % root_album.name)
+        for album in SloeTreeUtil.walk_albums():
+            # logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
+        
+            for remoteitem in album.remoteitems:
+                if SloeTreeUtil.object_matches_selector(remoteitem, selectors):
+                    remoteitem_uuids.append(remoteitem.uuid)
+
+        workspec = SloeTransferJob()
+        workspec.set_values(
+            name="updateitem %s" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+            leafname="+transferjob,update",
+            payload_type="updateitems",
+            priority=0,
+            remoteitem_uuids=remoteitem_uuids,
+            transfer_type="youtube"
+        )
+        workspec.create_uuid()
+        workspec.verify_creation_data()
+        work = [workspec]
+        
+        stats = {
+            "todo" : len(remoteitem_uuids),
+            "done" : 0
+        }
+        
+        logging.debug("get_all_playlist_work done")        
+        return (work, stats)

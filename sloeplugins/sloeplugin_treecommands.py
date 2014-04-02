@@ -28,6 +28,16 @@ class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
         sloelib.SloeExecUtil.do_work(executor, work)
         
         
+    def command_doupdate(self, params, options):
+        tree = sloelib.SloeTree.inst()
+        tree.load() 
+        executor = sloelib.SloeLocalExec(tree)
+        work_manager = sloelib.SloeWorkManager()
+        selectors = params
+        work, stats = work_manager.get_all_update_work(selectors)
+        sloelib.SloeExecUtil.do_work(executor, work)
+        
+        
     def command_dowork(self, params, options):
         tree = sloelib.SloeTree.inst()
         tree.load() 

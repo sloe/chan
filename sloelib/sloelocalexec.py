@@ -40,6 +40,11 @@ class SloeLocalExec(object):
                         "youtube",
                         "do_playlist_transfer_job",
                         playlist=playlist)
+                elif jobspec.payload_type == "updateitems":
+                    SloePlugInManager.inst().call_plugin(
+                        "youtube",
+                        "do_update_items_job",
+                        remoteitem_uuids=jobspec.remoteitem_uuids)
                 else:
                     raise SloeError("Unknown youtube transfer job payload type %s" % jobspec.payload_type)
             else:

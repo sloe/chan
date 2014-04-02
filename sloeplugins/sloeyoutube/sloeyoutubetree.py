@@ -90,7 +90,7 @@ class SloeYouTubeTree(object):
                     video_specs[i][u"sloevideo"] = v
 
                 for i, video_id in enumerate(video_ids):
-                    self.item_list[video_id] = SloeYouTubeItem(video_specs[i])
+                    # self.item_list[video_id] = SloeYouTubeItem(video_specs[i])
                     self.item_list[video_id].update_video_description("Sloecoach test video")
                     self.item_list[video_id].set_sloeid_tag("01234567890")
 

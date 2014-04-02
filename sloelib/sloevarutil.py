@@ -135,5 +135,6 @@ class SloeVarUtil(object):
                      match.group(3))
 
         if ret_str != input_string:
-            logging.debug("Substituted '%s' for '%s'" % (ret_str, input_string))
+            pass
+            # logging.debug("Substituted '%s' for '%s'" % (ret_str, input_string))
         return ret_str.replace("\\n", "\n")

@@ -198,7 +198,7 @@ class SloeUtil(object):
                         break
             if subst is None:
                 raise SloeError("No substitution variable {%s%s.%s}" % (prefix, node_name, name))
-            logging.debug("Substituted %s for {%s%s.%s}" % (subst, prefix, node_name, name))
+            # logging.debug("Substituted %s for {%s%s.%s}" % (subst, prefix, node_name, name))
             value = match.group(1) + subst + match.group(4)
    
         return value

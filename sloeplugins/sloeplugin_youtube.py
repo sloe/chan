@@ -5,52 +5,60 @@ import sys
 from pprint import pprint, pformat
 
 import sloelib
-from sloeyoutube import SloeYouTubePlaylist, SloeYouTubeSession
+from sloeyoutube import SloeYouTubePlaylist, SloeYouTubeSession, SloeYouTubeUpload
 
 class SloePluginYoutube(sloelib.SloeBasePlugIn):
 
     def command_youtubeauth(self, params, options):
-        session_r = sloeyoutube.SloeYouTubeSession("r")
+        session_r = SloeYouTubeSession("r")
         session_r()
-        session_w = sloeyoutube.SloeYouTubeSession("w")
+        session_w = SloeYouTubeSession("w")
         session_w()    
+        session_upload = SloeYouTubeSession("upload")
+        session_upload()
 
 
     def command_youtubedumptree(self, params, options):
-        session_r = sloeyoutube.SloeYouTubeSession("r")
+        session_r = SloeYouTubeSession("r")
         tree = sloeyoutube.SloeYouTubeTree(session_r)
         tree.read()
         print tree
 
 
+
+    def _get_youtube_spec_for_item(self, item, remoteitem, transferspec):
+        youtube_spec = {
+            "filepath": item.get_file_path(),
+        }
+        
+        elements = (
+            "category",
+            "description",
+            "privacy",
+            "tags",
+            "title"
+        )
+        
+        for element in elements:
+            youtube_spec[element] = sloelib.SloeOutputUtil.substitute_for_remote_item(
+                getattr(transferspec, 'youtube_' + element), item, remoteitem, transferspec)
+         
+           
+        tags = youtube_spec["tags"].split(":,")
+        tags.append("oarstackremoteitem=%s" % remoteitem.uuid)
+        youtube_spec["tags"] = ",".join([x.strip() for x in tags])
+
+        return youtube_spec
+    
+
     def do_item_transfer_job(self, item, transferspec):
         try:
             remoteitem = sloelib.SloeOutputUtil.find_remoteitem(item, transferspec)
             
-            youtube_spec = {
-                "filepath": item.get_file_path(),
-            }
+            youtube_spec = self._get_youtube_spec_for_item(item, remoteitem, transferspec)
             
-            elements = (
-                "category",
-                "description",
-                "privacy",
-                "tags",
-                "title"
-            )
-            
-            for element in elements:
-                youtube_spec[element] = sloelib.SloeOutputUtil.substitute_for_remote_item(
-                    getattr(transferspec, 'youtube_' + element), item, remoteitem, transferspec)
-             
-               
-            tags = youtube_spec["tags"].split(":,")
-            tags.append("oarstackremoteitem=%s" % remoteitem.uuid)
-            youtube_spec["tags"] = ",".join([x.strip() for x in tags])
-
-            logging.info("youtube_spec=%s" % pformat(youtube_spec))
-            youtube_session = sloeyoutube.SloeYouTubeSession("upload")
-            remote_id = "test"
+            logging.debug("youtube_spec=%s" % pformat(youtube_spec))
+            youtube_session = SloeYouTubeSession("upload")
             remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
 
             remoteitem.update({
@@ -67,6 +75,27 @@ class SloePluginYoutube(sloelib.SloeBasePlugIn):
         except sloelib.SloeError, e:
             logging.error("Abandoned transfer attempt: %s" % str(e))
 
+
+    def do_update_items_job(self, remoteitem_uuids):
+        session_w = SloeYouTubeSession("w")
+        for remoteitem_uuid in remoteitem_uuids:
+            try:
+                remoteitem = sloelib.SloeTreeNode.get_object_by_uuid(remoteitem_uuid)
+                self._update_remote_item(session_w, remoteitem)
+    
+            except sloelib.SloeError, e:
+                logging.error("Abandoned transfer attempt: %s" % str(e))
+
+
+    def _update_remote_item(self, session_w, remoteitem):
+        ids = sloelib.SloeUtil.extract_common_id(remoteitem.common_id)        
+        item = sloelib.SloeTreeNode.get_object_by_uuid(ids["I"])
+        transferspec = sloelib.SloeTreeNode.get_object_by_uuid(ids["T"])
+        youtube_spec = self._get_youtube_spec_for_item(item, remoteitem, transferspec)
+        
+        logging.debug("youtube_spec=%s" % pformat(youtube_spec))    
+        remote_id = SloeYouTubeUpload.do_item_update(session_w, remoteitem.remote_id, youtube_spec)
+        
 
     def do_playlist_transfer_job(self, playlist):
         try:

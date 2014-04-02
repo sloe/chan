@@ -26,6 +26,35 @@ class SloeYouTubeUpload(object):
                             httplib.ResponseNotReady, httplib.BadStatusLine)
     RETRIABLE_STATUS_CODES = (500, 502, 503, 504)
 
+
+    @classmethod
+    def do_item_update(cls, session, video_id, spec):
+        tags = None
+        if "tags" in spec:
+            tags = spec["tags"].split(",")
+
+        body=dict(
+            id=video_id,
+            snippet=dict(
+                title=spec["title"],
+                description=spec["description"],
+                tags=tags,
+                categoryId=spec["category"]
+                ),
+            status=dict(
+                privacyStatus=spec["privacy"]
+            )
+        )
+
+        update_request = session().videos().update(
+            part="snippet,status",
+            body=body)
+        
+        result = update_request.execute()
+        return result
+        
+
+
     @classmethod
     def do_upload(cls, session, spec):
         tags = None
