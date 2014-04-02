@@ -8,44 +8,30 @@ import sloelib
 
 class SloePluginTreeCommands(sloelib.SloeBasePlugIn):
 
-    def command_dolists(self, params, options):
+    def _work_command(self, params, options, get_fn):
         tree = sloelib.SloeTree.inst()
         tree.load() 
         executor = sloelib.SloeLocalExec(tree)
-        work_manager = sloelib.SloeWorkManager()
         selectors = params
-        work, stats = work_manager.get_all_playlist_work(selectors)
+        work, stats = get_fn(selectors)
+        print "Work to do = %d, already done = %d" % (stats["todo"], stats["done"])
         sloelib.SloeExecUtil.do_work(executor, work)
+        
+
+    def command_dolists(self, params, options):
+        self._work_command(params, options, sloelib.SloeWorkManager().get_all_playlist_work)
         
         
     def command_dotrans(self, params, options):
-        tree = sloelib.SloeTree.inst()
-        tree.load() 
-        executor = sloelib.SloeLocalExec(tree)
-        work_manager = sloelib.SloeWorkManager()
-        selectors = params
-        work, stats = work_manager.get_all_transfer_work(selectors)
-        sloelib.SloeExecUtil.do_work(executor, work)
+        self._work_command(params, options, sloelib.SloeWorkManager().get_all_transfer_work)
         
         
     def command_doupdate(self, params, options):
-        tree = sloelib.SloeTree.inst()
-        tree.load() 
-        executor = sloelib.SloeLocalExec(tree)
-        work_manager = sloelib.SloeWorkManager()
-        selectors = params
-        work, stats = work_manager.get_all_update_work(selectors)
-        sloelib.SloeExecUtil.do_work(executor, work)
+        self._work_command(params, options, sloelib.SloeWorkManager().get_all_update_work)
         
         
     def command_dowork(self, params, options):
-        tree = sloelib.SloeTree.inst()
-        tree.load() 
-        executor = sloelib.SloeLocalExec(tree)
-        work_manager = sloelib.SloeWorkManager()
-        selectors = params
-        work, stats = work_manager.get_all_work(selectors)
-        sloelib.SloeExecUtil.do_work(executor, work)  
+        self._work_command(params, options, sloelib.SloeWorkManager().get_all_work) 
    
    
     def command_lstree(self, params, options):
