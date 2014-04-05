@@ -20,7 +20,7 @@ class SloePluginYoutube(sloelib.SloeBasePlugIn):
 
     def command_youtubedumptree(self, params, options):
         session_r = SloeYouTubeSession("r")
-        tree = sloeyoutube.SloeYouTubeTree(session_r)
+        tree = SloeYouTubeTree(session_r)
         tree.read()
         print tree
 
@@ -59,7 +59,7 @@ class SloePluginYoutube(sloelib.SloeBasePlugIn):
             
             logging.debug("youtube_spec=%s" % pformat(youtube_spec))
             youtube_session = SloeYouTubeSession("upload")
-            remote_id = sloeyoutube.SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
+            remote_id = SloeYouTubeUpload.do_upload(youtube_session, youtube_spec)
 
             remoteitem.update({
                 "description": youtube_spec["description"],
