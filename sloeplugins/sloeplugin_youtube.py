@@ -101,7 +101,7 @@ class SloePluginYoutube(sloelib.SloeBasePlugIn):
         try:
             ordered_items = playlist.get_ordered_items()
             if len(ordered_items) == 0:
-                raise SloeError("Playlist %s in empty" % playlist.name)
+                raise sloelib.SloeError("Playlist %s is empty" % playlist.name)
 
             remoteplaylist = sloelib.SloeOutputUtil.find_remoteplaylist(playlist)
             

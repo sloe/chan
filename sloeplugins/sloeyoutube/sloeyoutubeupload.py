@@ -57,6 +57,9 @@ class SloeYouTubeUpload(object):
 
     @classmethod
     def do_upload(cls, session, spec):
+        if len(spec["title"]) > 100:
+            raise sloelib.SloeError("Upload failure: Title '%s' is too long (%d)" % (spec["title"], len(spec["title"])))
+            
         tags = None
         if "tags" in spec:
             tags = spec["tags"].split(",")
@@ -104,7 +107,7 @@ class SloeYouTubeUpload(object):
                         error_message = "A retriable HTTP error %d occurred:\n%s" % (e.resp.status,
                                                                              e.content)
                     else:
-                        raise sloelib.SloeError("Upload failure: %s" % str(e))
+                        raise sloelib.SloeError("Upload failure: %s (%s)" % (str(e), str(e.content)))
                     
                 except cls.RETRIABLE_EXCEPTIONS, e:
                     error_message = "A retriable error occurred: %s" % e

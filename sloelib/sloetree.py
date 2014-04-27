@@ -149,7 +149,7 @@ class SloeTree:
             subtree = string.replace(os.path.relpath(os.path.dirname(obj_path), treeroot_parent), "\\", "/")
             parent_album = albums_by_subpath.get(subtree, None)
             if parent_album is None:
-                raise SloeError("Object has no parent in its parent directory: '%s'" % full_path)
+                raise SloeError("Object has no parent in its parent directory: '%s'" % obj_path)
             return parent_album            
             
         # Load items - file check and count has special handling
