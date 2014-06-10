@@ -69,4 +69,25 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
         make_playlist("ytq", "Cambridge May Bumps 2014 division %s slow motion" % div_code, "youtube,I=60p,S=4", "slow motion", "slow motion ", ",Slow Motion")
                         
 
+    def command_oarstacklist(self, params, options):
+        tree = sloelib.SloeTree.inst()
+        tree.load()
+        
+        for subtree, album, items in sloelib.SloeTreeUtil.walk_items(tree.root_album):
+            indent = ""
+            if sloelib.SloeTreeUtil.object_matches_selector(album, params):
+                try:
+                    for remoteplaylist in album.remoteplaylists:
+                        ids = sloelib.SloeUtil.extract_common_id(remoteplaylist.common_id)
+                        playlist = sloelib.SloeTreeNode.get_object_by_uuid(ids['P'])
+                        title = playlist.title
+                        if title[-1] in "0123456789":
+                            title += " normal and slow motion"
+                        print '<a title="%s" href="https://www.youtube.com/playlist?list=%s">%s</a>' % (title, remoteplaylist.remote_id, title)
+
+                except KeyError, e:
+                    logging.error("Missing attribute for %s (%s)" % (album.get("name", "<Unknown>"), str(e)))
+                    raise e    
+
+
 SloePluginOarstack("oarstack")
