@@ -14,6 +14,17 @@ class SloePlaylist(SloeTreeNode):
         SloeTreeNode.__init__(self, "playlist", "09")
 
 
+    def create_new(self, name, priority, full_path):
+        self._d.update({
+            "name" : name,
+            "priority" : priority,
+            "_location" : full_path
+        })
+        self.create_uuid()
+        self.verify_creation_data()
+        self.add_to_library()
+
+
     @classmethod
     def new_from_ini_file(cls, ini_filepath, error_info):
         obj = SloePlaylist()
