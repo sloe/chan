@@ -74,7 +74,8 @@ class SloePluginGenerateConfig(sloelib.SloeBasePlugIn):
                 if len(album_files) == 1:
                     temp_album = sloelib.SloeAlbum()
                     temp_album.create_from_ini_file(os.path.join(parent_dir, album_files[0]),
-                                                            "Loading album to determine parent")
+                                                            "Loading album to determine parent",
+                                                            add_to_library=False)
                     parent_uuid = temp_album.uuid
 
                 if os.path.normpath(parent_dir).lower() == os.path.normpath(sloelib.SloeConfig.get_global("treeroot")).lower():

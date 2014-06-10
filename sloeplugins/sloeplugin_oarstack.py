@@ -10,7 +10,7 @@ import sloelib
 
 class SloePluginOarstack(sloelib.SloeBasePlugIn):  
     
-    def command_makeprimary(self, params, options):
+    def command_makemays(self, params, options):
         pprint(params)
         event_dir, day_dir, div_dir = params
         div_code = "%s%s" % (div_dir[3].upper(), div_dir[4])
@@ -35,15 +35,15 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
         primary_album = sloelib.SloeAlbum()
         primary_album.create_new(div_dir, primary_path)
         primary_album.set_values(
-            title=div_code,
-            subevent_title=div_code
+            title="division %s" % div_code,
+            subevent_title="division %s" % div_code
         )
         primary_album.save_to_file()
 
         final_album = sloelib.SloeAlbum()
         final_album.create_new(div_dir, final_path)
         final_album.set_values(
-            title=div_code,
+            title="division %s" % div_code,
             source_album_uuid = primary_album.uuid
         )
         final_album.save_to_file()        
@@ -64,9 +64,9 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
             pprint(playlist)
             playlist.save_to_file()
         
-        make_playlist("all", "Cambridge May Bumps 2014 Division %s" % div_code, None, "normal and slow motion", "alternating normal speed and slow motion ", ",Slow Motion")
-        make_playlist("ytf", "Cambridge May Bumps 2014 Division %s normal speed" % div_code, "youtube,I=60p,S=1", "normal speed", "", "")
-        make_playlist("ytq", "Cambridge May Bumps 2014 Division %s slow motion" % div_code, "youtube,I=60p,S=4", "slow motion", "slow motion ", ",Slow Motion")
+        make_playlist("all", "Cambridge May Bumps 2014 division %s" % div_code, None, "normal and slow motion", "alternating normal speed and slow motion ", ",Slow Motion")
+        make_playlist("ytf", "Cambridge May Bumps 2014 division %s normal speed" % div_code, "youtube,I=60p,S=1", "normal speed", "", "")
+        make_playlist("ytq", "Cambridge May Bumps 2014 division %s slow motion" % div_code, "youtube,I=60p,S=4", "slow motion", "slow motion ", ",Slow Motion")
                         
 
 SloePluginOarstack("oarstack")

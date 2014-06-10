@@ -82,9 +82,9 @@ class SloeTreeNode(object):
         self._d.update(param_dict)        
 
 
-    def create_from_ini_file(self, ini_filepath, error_info):
+    def create_from_ini_file(self, ini_filepath, error_info, add_to_library=True):
         with open(ini_filepath, "rb") as ini_fp:
-            self.create_from_ini_fp(ini_fp, error_info)
+            self.create_from_ini_fp(ini_fp, error_info, add_to_library)
         self.add_filepath_info(ini_filepath)
         
             
@@ -112,7 +112,7 @@ class SloeTreeNode(object):
         return "/".join(treelist)
     
 
-    def create_from_ini_fp(self, ini_fp, error_info):
+    def create_from_ini_fp(self, ini_fp, error_info, add_to_library=True):
         self._d =  {
             "type": self._type
         }
@@ -151,7 +151,8 @@ class SloeTreeNode(object):
         for k, v in new_d.iteritems():
             content = v.replace("\\n", "\n")
             self._d[k] = content
-        self.add_to_library()
+        if add_to_library:
+            self.add_to_library()
 
 
     def verify_creation_data(self, creation_data=None):
