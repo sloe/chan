@@ -8,9 +8,27 @@ from sloeerror import SloeError
 from sloetreenode import SloeTreeNode
 
 class SloeAlbum(SloeTreeNode):
-    MANDATORY_ELEMENTS = ("name", "uuid")
+    MANDATORY_ELEMENTS = {
+        "name": "Primary name of object"
+    }
+    MANDATORY_ELEMENTS.update(SloeTreeNode.MANDATORY_ELEMENTS)
+    OPTIONAL_ELEMENTS = {
+        "capture_device": "Name of video capture device",
+        "capture_info": "Further information about capture",
+        "event_time": "Time of the real-world event",
+        "event_title": "Title of the real-world event",
+        "location": "Location of the real-world event",
+        "order": "Filename of list used to establish item order",
+        "sitetag": "Tags for the whole site",
+        "source_album_uuid": "UUID of album from which this album is derived",
+        "subevent_title": "Title of a sub-event within a real-world event",
+        "title": "Title of this album",
+        "tags": "Tags for this album"
+    }
+    OPTIONAL_ELEMENTS.update(SloeTreeNode.OPTIONAL_ELEMENTS)
+
     CONTENT_TYPES = ("album", "genspec", "item", "order", "outputspec", "playlist", "remoteitem", "remoteplaylist", "transferspec")
-    
+
     def __init__(self):
         SloeTreeNode.__init__(self, "album", "02")
         for content_name in self.CONTENT_TYPES:
@@ -73,7 +91,7 @@ class SloeAlbum(SloeTreeNode):
 
     def get_child_album_or_none(self, uuid):
         return self.album_dict.get(uuid, None)
-    
+
 
     def add_child_obj(self, obj):
         obj_dict = getattr(self, "%s_dict" % obj.type, None)
@@ -92,7 +110,7 @@ class SloeAlbum(SloeTreeNode):
         if num_orders != 1:
             logging.warning("Cannot sort album %s - no single order (%d present)" % (self.name, num_orders))
             return
-        
+
         item_check = self.item_dict.copy()
         new_order = []
         for item_uuid in self.orders[0].get_item_order():
@@ -101,19 +119,19 @@ class SloeAlbum(SloeTreeNode):
             else:
                 del item_check[item_uuid]
                 new_order.append(self.item_dict[item_uuid])
-                
+
         num_remaining_items = len(item_check)
         if num_remaining_items > 5:
             logging.info("%d items in album but not in default order" % num_remaining_items)
         elif num_remaining_items > 0:
             logging.info("Items in album but not in default order: %s" % ", ".join(item_check.keys()))
         self.items = new_order
-            
-            
-                
-            
-            
-        
+
+
+
+
+
+
 
 #    def __repr__(self):
 #        return "|Album|ALBUMS=" + pformat(self.album_dict) + "\nITEMS=" + pformat(self.item_dict)

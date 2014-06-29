@@ -9,7 +9,19 @@ from sloetreenode import SloeTreeNode
 from sloeutil import SloeUtil
 
 class SloePlaylist(SloeTreeNode):
-    MANDATORY_ELEMENTS = ("name", "priority", "uuid")
+    MANDATORY_ELEMENTS = {
+        "name": "Primary name of the item",
+        "priority": "Priority of the item",
+        "title": "Title of playlist"
+    }
+    MANDATORY_ELEMENTS.update(SloeTreeNode.MANDATORY_ELEMENTS)
+    OPTIONAL_ELEMENTS = {
+        "selector_genspec_name": "Name of GenSpec used to select items",
+        "transfer_type": "Type of transfer used for this playlist"
+    }
+    OPTIONAL_ELEMENTS.update(SloeTreeNode.OPTIONAL_ELEMENTS)
+
+
     def __init__(self):
         SloeTreeNode.__init__(self, "playlist", "09")
 
@@ -35,15 +47,15 @@ class SloePlaylist(SloeTreeNode):
 
     def get_ordered_items(self):
         parent_album = SloeTreeNode.get_object_by_uuid(self._parent_album_uuid)
-        if len(parent_album.orders) > 0:   
+        if len(parent_album.orders) > 0:
             order = parent_album.orders[0]
         else:
             source_album = SloeTreeNode.get_object_by_uuid(parent_album.source_album_uuid)
-            if len(source_album.orders) > 0:    
+            if len(source_album.orders) > 0:
                 order = source_album.orders[0]
             else:
                 logging.error("Cannot get order for album %s" % parent_album.name)
-                
+
         item_uuid_to_order_map = order.get_item_uuid_to_order_map()
         prioritised_items = defaultdict(list)
         # Use simple parent album selector for now
@@ -59,7 +71,7 @@ class SloePlaylist(SloeTreeNode):
             else:
                 final_item = SloeTreeNode.get_object_by_uuid(extracted_remoteitem["I"])
                 extracted_final = SloeUtil.extract_common_id(final_item.common_id)
-                item = SloeTreeNode.get_object_by_uuid(extracted_final["I"])                
+                item = SloeTreeNode.get_object_by_uuid(extracted_final["I"])
                 priority = 10000.0 * item_uuid_to_order_map[item.uuid]
                 genspec = SloeTreeNode.get_object_by_uuid(extracted_final["G"])
                 priority += genspec.priority
@@ -67,16 +79,16 @@ class SloePlaylist(SloeTreeNode):
                     # logging.debug("Rejected item '%s' - selector_genspec_name(%s) != genspec.name(%s)" % (remoteitem.name, selector_genspec_name, genspec.name))
                     add_item = False
 
-                        
+
             if add_item:
                 prioritised_items[priority].append(remoteitem)
-        
+
         ret_items = []
         for k in sorted(prioritised_items.keys()):
             ret_items += prioritised_items[k]
-                
+
         return ret_items
-        
+
 
     def __repr__(self):
         return "|SloePlaylist|%s" % pformat(self._d)

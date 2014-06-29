@@ -16,6 +16,7 @@ from sloeremoteitem import SloeRemoteItem
 from sloerenderjob import SloeRenderJob
 from sloesandbox import SloeSandbox
 from sloetransferjob import SloeTransferJob
+from sloetransferspec import SloeTransferSpec
 from sloetree import SloeTree
 from sloetreenode import SloeTreeNode
 from sloetrees import SloeTrees
@@ -28,7 +29,7 @@ from sloeworkmanager import SloeWorkManager
 
 __all__ = ["sloealbum", "sloebaseplugin", "sloeconfig", "sloeerror", "sloeexecutil", "sloegenspec", "sloeitem",
            "sloelocalexec", "sloeorder", "sloeoutputspec", "sloeoutpututil", "sloeplaylist", "sloepluginmanager",
-           "sloeremoteitem", "sloerenderjob", "sloesandbox", "sloetransferjob",
+           "sloeremoteitem", "sloerenderjob", "sloesandbox", "sloetransferjob", "sloetransferspec",
            "sloetree", "sloetreenode", "sloetrees", "sloetreeutil", "sloeutil",
            "sloevarutil", "sloevideoutil", "sloeworkmanager"]
 __version__ = "0.0.1"

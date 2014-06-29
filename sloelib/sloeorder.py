@@ -9,9 +9,15 @@ from sloetreenode import SloeTreeNode
 from sloeutil import SloeUtil
 
 class SloeOrder(SloeTreeNode):
-    MANDATORY_ELEMENTS = ("name", "uuid")
+    MANDATORY_ELEMENTS = {
+        "name": "Primary name of the item"
+    }
+    MANDATORY_ELEMENTS.update(SloeTreeNode.MANDATORY_ELEMENTS)
+
+
     def __init__(self):
         SloeTreeNode.__init__(self, "order", "0a")
+
 
     @classmethod
     def new_from_ini_file(cls, ini_filepath, error_info):
@@ -32,19 +38,23 @@ class SloeOrder(SloeTreeNode):
                     if item.leafname == leafname:
                         item_found = item
                         break
-                    
+
                 if not item_found:
                     raise SloeError("Item '%s' from '%s'cannot be found" % (leafname, full_path))
                 ordered_item_uuids.append(item.uuid)
-            
+
         for i, item_uuid in enumerate(ordered_item_uuids):
             obj._d["order%.1f" % (1.0 * (i+1))] = item_uuid
-              
+
         obj.create_uuid()
-        obj.add_filepath_info(full_path)
         obj.set_value("name", "order-%s" % str(obj.uuid))
         obj.verify_creation_data()
+        obj.add_filepath_info(full_path)
         return obj
+
+
+    def verify_confirm_unknown(self, element):
+        return not element.startswith("order")
 
 
     def get_item_order(self):
@@ -56,20 +66,20 @@ class SloeOrder(SloeTreeNode):
                     order_value_to_uuid[val].append(self._d[k])
                 else:
                     order_value_to_uuid[val] = [self._d[k]]
-                    
+
         ret_list = []
         for k in sorted(order_value_to_uuid.keys()):
             ret_list += order_value_to_uuid[k]
-            
+
         return ret_list
-                
+
 
     def get_item_uuid_to_order_map(self):
         item_order = self.get_item_order()
         ret_map = {}
         for i, u in enumerate(item_order):
             ret_map[u] = i
-        
+
         return ret_map
 
 
@@ -77,6 +87,5 @@ class SloeOrder(SloeTreeNode):
         return "|Order|%s" % pformat(self._d)
 
 
-    
+
 SloeTreeNode.add_factory("ORDER", SloeOrder)
-    
