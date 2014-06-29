@@ -35,7 +35,7 @@ class SloePluginAfterEffects(sloelib.SloeBasePlugIn):
 
     def _path_list(self):
         glb_cfg = sloelib.SloeConfig.inst()
-        aerender_path = glb_cfg.get_or_none("global", "aerender")
+        aerender_path = glb_cfg.get_value_default("global", "aerender", None)
         config_paths = []
         if aerender_path:
             config_paths.append(aerender_path)

@@ -28,6 +28,12 @@ class SloeConfig(object):
         return cls.inst().get_value("global", name)
 
 
+    @classmethod
+    def get_global_default(cls, name, default):
+        return cls.inst().get_value_default("global", name, default)
+
+
+
     def get_section(self, section):
         if section not in self.sections:
             raise SloeError("Configuration section %s not present" % section)
@@ -38,14 +44,23 @@ class SloeConfig(object):
         return self.get_section(section)[name]
 
 
-    def get_or_none(self, section, name):
-        return self.get_section(section).get(name, None)
+    def get_value_default(self, section, name, default):
+        return self.get_section(section).get(name, default)
 
 
     def set_value(self, section, name, value):
         if section not in self.sections:
             self.sections[section] = {}
         self.sections[section][name] = value
+
+
+    @classmethod
+    def set_global(cls, name, value):
+        return cls.inst().set_value("global", name, value)
+
+
+
+
 
 
     def set_options(self, opt):

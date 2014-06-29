@@ -19,7 +19,8 @@ class SloeConfigSpec(SloeTreeNode):
     OPTIONAL_ELEMENTS = {
         "aeprojectdir": "(Relative) path to After Effect project directory",
         "ffprobe": "(Relative) path to ffprobe command",
-        "plugindirs": "(Relative) paths to plugin directories"
+        "plugindirs": "(Relative) paths to plugin directories",
+        "testdataroot": "(Relative) path to the test data directory",
     }
     OPTIONAL_ELEMENTS.update(SloeTreeNode.OPTIONAL_ELEMENTS)
 
