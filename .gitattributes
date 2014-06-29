@@ -1,0 +1,4 @@
+# github.com/sloe/chan .gitattributes file
+
+*.txt	text
+*.py	text
