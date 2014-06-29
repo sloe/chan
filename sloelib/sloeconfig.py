@@ -2,16 +2,14 @@
 import os
 from pprint import pprint, pformat
 
-import ConfigParser
 from sloeerror import SloeError
 
-class SloeConfig:
+class SloeConfig(object):
     instance = None
 
     def __init__(self):
-        self.reset()
-        self.opt = None
-
+        self.sections = {}
+        self.options = None
 
     @classmethod
     def inst(cls):
@@ -30,36 +28,10 @@ class SloeConfig:
         return cls.inst().get_value("global", name)
 
 
-    def reset(self):
-        defaults  = {}
-        self.parser = ConfigParser.SafeConfigParser(defaults)
-        self.data_valid = False
-
-
-    def appendfile(self, filename):
-        files = self.parser.read(filename)
-        if not files:
-            raise SloeError("Could not read config file %s" % filename)
-        self.data_valid = False
-
-
-    def remake_data(self):
-        if not self.data_valid:
-            self.data = {}
-            for section in self.parser.sections():
-                self.data[section] = {}
-                for name, value in self.parser.items(section):
-                    if not name.startswith("_"):
-                        self.data[section][name] = value
-            self.data_valid = True
-
-
     def get_section(self, section):
-        if not self.data_valid:
-            self.remake_data()
-        if section not in self.data:
+        if section not in self.sections:
             raise SloeError("Configuration section %s not present" % section)
-        return self.data[section]
+        return self.sections[section]
 
 
     def get_value(self, section, name):
@@ -70,7 +42,10 @@ class SloeConfig:
         return self.get_section(section).get(name, None)
 
 
-
+    def set_value(self, section, name, value):
+        if section not in self.sections:
+            self.sections[section] = {}
+        self.sections[section][name] = value
 
 
     def set_options(self, opt):
@@ -83,12 +58,9 @@ class SloeConfig:
 
     def dump(self):
         message = ""
-        for section in ["DEFAULT"] + self.parser.sections():
-            message += "[%s]\n" % section
-            for name, value in self.parser.items(section):
-                if not name.startswith("_"):
-                    message += "%s=%s\n" % (name, value)
+        for section_name, section in self.sections.iteritems():
+            message += "[%s]\n" % section_name
+            for name, value in section.iteritems():
+                message += "%s=%s\n" % (name, value)
 
-        self.remake_data()
-        message += pformat(self.data)
         return message

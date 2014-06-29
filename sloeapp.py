@@ -33,13 +33,13 @@ class SloeApp:
                           help="abort before the first render command, leaving sandbox files in place")
         parser.add_option("--postrenderabort",
                           action="store_true", dest="postrenderabort", default=False,
-                          help="abort after the first render command, leaving sandbox files in place")      
+                          help="abort after the first render command, leaving sandbox files in place")
         parser.add_option("--reset-sloeid",
                           action="store_true", dest="resetsloeid", default=False,
                           help="reset sloeid values in Youtube tags")
         parser.add_option("--script-dir",
                           action="store_true", dest="script_dir", default=os.path.dirname(os.path.abspath(__file__)),
-                          help="Path to the directory containing %s" % os.path.dirname(__file__))        
+                          help="Path to the directory containing %s" % os.path.dirname(__file__))
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose", default=False,
                           help="verbose output")
@@ -47,8 +47,16 @@ class SloeApp:
         self.params = self.args[1:]
         logging.basicConfig(format="#%(levelname)s:%(filename)s::%(funcName)s#%(lineno)d at %(asctime)s\n%(message)s")
         glb_cfg = sloelib.SloeConfig.inst()
-        logging.info("Loading global config file config.cfg")
-        glb_cfg.appendfile('config.cfg')
+        config_spec = None
+        if len(self.params) > 0 and self.params[0].lower().startswith("test"):
+            config_spec = sloelib.SloeConfigSpec.new_from_ini_file("config.cfg", "Loading initial config")
+        else:
+            logging.getLogger().setLevel(logging.INFO)
+            logging.info("Loading test config file testdata/config.cfg")
+            config_spec = sloelib.SloeConfigSpec.new_from_ini_file("testdata/testconfig.cfg", "Loading test config")
+
+        config_spec.apply_to_config(glb_cfg, "global")
+
         loglevelstr = glb_cfg.get_value("global", "loglevel")
         if loglevelstr == 'DEBUG':
             self.loglevel = logging.DEBUG
@@ -63,7 +71,7 @@ class SloeApp:
         logging.getLogger().setLevel(self.loglevel)
 
         glb_cfg.set_options(self.options)
-            
+
 
         if len(self.args) == 0:
             parser.error("Please supply a command argument")
@@ -71,18 +79,18 @@ class SloeApp:
             command = self.args[0]
             plugin_commands = sloelib.SloePlugInManager.inst().commands
             if command in plugin_commands.keys():
-                    
+
                 command_spec = plugin_commands[command]
                 sloelib.SloePlugInManager.inst().call_plugin(
                     command_spec["plugin"],
                     command_spec["method"],
                     params=self.args[1:],
-                    options=self.options)                
-            else:        
+                    options=self.options)
+            else:
                 valid_commands = ["lsoutput", "sync", "verifytree"] + plugin_commands.keys()
                 if command not in valid_commands:
                     parser.error("Command not valid - must be one of %s" % ", ".join(valid_commands))
-    
+
                 logging.info("Command: %s" % " ".join(self.args))
                 getattr(self, command)(*self.args[1:])
 
@@ -110,6 +118,7 @@ class SloeApp:
             tree = sloelib.SloeTrees.inst().get_tree()
             if (sloelib.SloeConfig.get_option("dump")):
                 pprint(tree)
+
 
 if __name__ == "__main__":
     SloeApp().enter()
