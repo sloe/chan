@@ -5,7 +5,7 @@ import sys
 from pprint import pprint, pformat
 
 import sloelib
-from sloeyoutube import SloeYouTubePlaylist, SloeYouTubeSession, SloeYouTubeUpload
+from .sloeyoutube import sloeyoutubeplaylist, sloeyoutubesession, sloeyoutubeupload
 
 class SloePluginYoutube(sloelib.SloeBasePlugIn):
 
