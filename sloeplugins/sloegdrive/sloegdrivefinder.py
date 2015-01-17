@@ -19,7 +19,7 @@ class SloeGDriveFinder(object):
         records = []
         for file_id in file_ids:
             req = dict(
-                fields='fileExtension,fileSize,id,md5Checksum,mimeType,openWithLinks,permissions(id,kind),quotaBytesUsed,title,videoMediaMetadata',
+                fields='fileExtension,fileSize,id,md5Checksum,mimeType,openWithLinks,permissions(id,kind),title,videoMediaMetadata',
                 fileId=file_id
             )
             response = self.get_session_r().files().get(**req).execute()
@@ -27,17 +27,23 @@ class SloeGDriveFinder(object):
         return records
 
 
-    def find_ids(self, find_str):
+    def find_ids(self, find_str, exact):
         elements = find_str.split('/')
 
         child_ids = ['root']
+        if exact:
+            operator = '='
+        else:
+            operator = 'contains'
+
         for element in elements:
             new_child_ids = []
             for child_id in child_ids:
+                escaped_element = element.replace("'", "\\'")
                 req = dict(
                     fields='items/id',
                     folderId=child_id,
-                    q="title contains '%s'" % element
+                    q="title %s '%s'" % (operator, escaped_element)
                 )
                 response = self.get_session_r().children().list(**req).execute()
                 items = response.get('items', None)
@@ -48,6 +54,6 @@ class SloeGDriveFinder(object):
         return child_ids
 
 
-    def find(self, find_str):
-        ids = self.find_ids(find_str)
+    def find(self, find_str, exact):
+        ids = self.find_ids(find_str, exact)
         return self.ids_to_records(ids)

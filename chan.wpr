@@ -29,6 +29,6 @@ proj.file-list = [loc('sloeapp.py'),
                   loc('sloelib/sloerenderjob.py')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('sloeapp.py'): ('project',
-        (u'gdriveauth',
+        (u'gdrivefind "hoc2014/div4/42"',
          ''))}
 proj.main-file = loc('sloeapp.py')

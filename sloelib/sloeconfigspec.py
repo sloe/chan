@@ -19,6 +19,7 @@ class SloeConfigSpec(SloeTreeNode):
     OPTIONAL_ELEMENTS = {
         "aeprojectdir": "(Relative) path to After Effect project directory",
         "ffprobe": "(Relative) path to ffprobe command",
+        "gdriveauthtokensroot": "(Relative) path to authorisation tokens for Google Drive",
         "plugindirs": "(Relative) paths to plugin directories",
         "testdataroot": "(Relative) path to the test data directory",
     }

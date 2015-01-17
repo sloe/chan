@@ -22,7 +22,7 @@ class SloePluginGDrive(sloelib.SloeBasePlugIn):
     def command_gdrivefind(self, params, options):
         finder = SloeGDriveFinder()
         for find_str in params:
-            results = finder.find(find_str)
+            results = finder.find(find_str, options.exact)
             pprint(results)
 
 

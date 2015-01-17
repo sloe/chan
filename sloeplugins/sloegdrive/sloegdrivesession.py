@@ -18,8 +18,9 @@ class SloeGDriveSession(object):
 
     def __init__(self, access):
         self.gdrive = None
-        self.secrets_file = "gdrive_secrets.json"
-        self.storage_file = "gdrive_oauth_storage_%s.json" % access
+        authtokensroot = sloelib.SloeConfig.inst().get_global('gdriveauthtokensroot')
+        self.secrets_file = os.path.join(authtokensroot, "gdrive_secrets.json")
+        self.storage_file = os.path.join(authtokensroot, "gdrive_oauth_storage_%s.json" % access)
         if access == "w":
             self.scope = "https://www.googleapis.com/auth/drive.file"
         elif access == "r":
@@ -35,7 +36,7 @@ class SloeGDriveSession(object):
 
     def _open_session(self):
         self.flow = flow_from_clientsecrets(self.secrets_file,
-                                            message="Auth failed",
+                                            message="Authentication failed",
                                             scope=self.scope)
 
         storage = Storage(self.storage_file)

@@ -22,6 +22,9 @@ class SloeApp:
         parser.add_option("--dump",
                           action="store_true", dest="dump", default=False,
                           help="dump output after processing")
+        parser.add_option("--exact",
+                          action="store_true", dest="exact", default=False,
+                          help="perform exact searches")
         parser.add_option("--final",
                           action="store_true", dest="final", default=False,
                           help="generate_cfg for final directory")

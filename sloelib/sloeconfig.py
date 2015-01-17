@@ -33,7 +33,6 @@ class SloeConfig(object):
         return cls.inst().get_value_default("global", name, default)
 
 
-
     def get_section(self, section):
         if section not in self.sections:
             raise SloeError("Configuration section %s not present" % section)
