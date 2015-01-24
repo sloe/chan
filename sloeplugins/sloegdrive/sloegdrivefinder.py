@@ -19,7 +19,7 @@ class SloeGDriveFinder(object):
         records = []
         for file_id in file_ids:
             req = dict(
-                fields='fileExtension,fileSize,id,md5Checksum,mimeType,openWithLinks,permissions(id,kind),title,videoMediaMetadata',
+                fields='alternateLink,fileExtension,fileSize,id,md5Checksum,mimeType,openWithLinks,permissions(id,kind),title,videoMediaMetadata,webContentLink',
                 fileId=file_id
             )
             response = self.get_session_r().files().get(**req).execute()

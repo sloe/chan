@@ -7,12 +7,14 @@ import re
 import types
 import uuid
 
-from sloealbum import SloeAlbum
-from sloeconfig import SloeConfig
-from sloeerror import SloeError
-from sloeitem import SloeItem
-from sloetree import SloeTree
-from sloetrees import SloeTrees
+from .sloealbum import SloeAlbum
+from .sloeconfig import SloeConfig
+from .sloeerror import SloeError
+from .sloeitem import SloeItem
+from .sloetree import SloeTree
+from .sloetreenode import SloeTreeNode
+from .sloetrees import SloeTrees
+from .sloeutil import SloeUtil
 
 
 class SloeTreeUtil(object):
@@ -266,7 +268,7 @@ class SloeTreeUtil(object):
 
 
     @classmethod
-    def find_remoteitems_for_item(cls, item_uuid):
+    def find_remoteitems_for_final_item(cls, item_uuid):
         remoteitems = []
         common_id_prefix = "I=%s" % item_uuid.lower()
         for _, album, _ in SloeTreeUtil.walk_items(SloeTree.inst().get_root_album()):
@@ -275,6 +277,21 @@ class SloeTreeUtil(object):
                     remoteitems.append(remoteitem)
 
         return remoteitems
+
+
+    @classmethod
+    def find_remoteitems_for_source_item(cls, source_item_uuid):
+        remoteitems = []
+        for _, album, _ in SloeTreeUtil.walk_items(SloeTree.inst().get_root_album()):
+            for remoteitem in album.remoteitems:
+                remoteitem_common_ids = SloeUtil.extract_common_id(remoteitem.get('common_id', ''))
+                final_item = SloeTreeNode.get_object_by_uuid(remoteitem_common_ids.get('I'))
+                finalitem_common_ids = SloeUtil.extract_common_id(final_item.get('common_id', ''))
+                if finalitem_common_ids.get('I') == source_item_uuid:
+                    remoteitems.append(remoteitem)
+
+        return remoteitems
+
 
 
     @classmethod

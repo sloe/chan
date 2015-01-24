@@ -236,6 +236,11 @@ class SloeTreeNode(object):
             parser.write(fp)
 
 
+    def as_dict(self):
+         # helper for web2py
+        return self._d
+
+
     @classmethod
     def get_object_by_uuid(cls, u):
         obj = cls.UUID_LIB.get(u, None)
