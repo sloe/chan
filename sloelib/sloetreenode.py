@@ -50,6 +50,9 @@ class SloeTreeNode(object):
         if name in node:
             return node[name]
         else:
+            auto_name = "auto_"+name
+            if auto_name in node:
+                return node[auto_name]
             return default
 
 
@@ -246,6 +249,12 @@ class SloeTreeNode(object):
         obj = cls.UUID_LIB.get(u, None)
         if obj is None:
             raise SloeError("Cannot find object with UUID '%s'" % u)
+        return obj
+
+
+    @classmethod
+    def get_object_by_uuid_or_none(cls, u):
+        obj = cls.UUID_LIB.get(u, None)
         return obj
 
 
