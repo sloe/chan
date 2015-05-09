@@ -26,10 +26,11 @@ class SloePlaylist(SloeTreeNode):
         SloeTreeNode.__init__(self, "playlist", "09")
 
 
-    def create_new(self, name, priority, full_path):
+    def create_new(self, name, title, priority, full_path):
         self._d.update({
             "name" : name,
             "priority" : priority,
+            "title" : title,
             "_location" : full_path
         })
         self.create_uuid()

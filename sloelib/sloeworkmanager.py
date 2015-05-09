@@ -29,7 +29,7 @@ class SloeWorkManager(object):
         glob_include = outputspec.get("glob_include", None)
         if fnmatch.fnmatch(item.leafname, glob_include) and item._primacy == "primary":
             add_workspec = True
-            
+
         if add_workspec:
             genspec_uuid = SloeTreeUtil.get_genspec_uuid_for_outputspec(outputspec)
             common_id = "G=%s,I=%s,O=%s" % (genspec_uuid, item.uuid, outputspec.uuid)
@@ -39,8 +39,8 @@ class SloeWorkManager(object):
             if found_item is not None:
                 add_workspec = False
                 stats_done += 1
-                
-        if add_workspec:          
+
+        if add_workspec:
             workspec = SloeRenderJob()
             workspec.set_values(
                 name="workitem %s" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
@@ -52,14 +52,14 @@ class SloeWorkManager(object):
             workspec.verify_creation_data()
             work.append(workspec)
             stats_todo += 1
-        
+
         stats = {
         "todo" : stats_todo,
         "done" : stats_done
         }
         return (work, stats)
-            
-            
+
+
 
     def get_all_work(self, selectors):
         work = []
@@ -79,13 +79,13 @@ class SloeWorkManager(object):
                     if SloeTreeUtil.object_matches_selector(item, selectors):
                         (work_for_item, stats_for_item) = self.get_work_for_item(album, item, outputspec)
                         work += work_for_item
-                        
+
                         for k in stats.keys():
                             stats[k] += stats_for_item[k]
-                        
+
         sorted_work = reversed(sorted(work, key=lambda x: x.get("priority", 0.0)))
         logging.debug("get_all_work done")
-        
+
         return (sorted_work, stats)
 
 
@@ -93,7 +93,7 @@ class SloeWorkManager(object):
         work = []
         stats_todo = 0
         stats_done = 0
-            
+
         common_id = "I=%s,T=%s" % (item.uuid, transferspec.uuid)
         found_item = SloeTreeUtil.find_remoteitem_by_spec({
             "common_id": common_id
@@ -114,7 +114,7 @@ class SloeWorkManager(object):
             workspec.create_uuid()
             workspec.verify_creation_data()
             work.append(workspec)
-        
+
         stats = {
         "todo" : stats_todo,
         "done" : stats_done
@@ -141,21 +141,21 @@ class SloeWorkManager(object):
                     if SloeTreeUtil.object_matches_selector(item, combined_selectors):
                         (work_for_item, stats_for_item) = self.get_transfer_work_for_item(album, item, transferspec)
                         work += work_for_item
-                        
+
                         for k in stats.keys():
                             stats[k] += stats_for_item[k]
-                        
+
         sorted_work = reversed(sorted(work, key=lambda x: x.get("priority", 0.0)))
         logging.debug("get_all_transfer_work done")
-        
-        return (sorted_work, stats)        
+
+        return (sorted_work, stats)
 
 
     def get_work_for_playlist(self, album, playlist):
         work = []
         stats_todo = 0
         stats_done = 0
-            
+
         common_id = "P=%s" % playlist.uuid
         found_item = SloeTreeUtil.find_remoteplaylist_by_spec({
             "common_id": common_id
@@ -176,13 +176,13 @@ class SloeWorkManager(object):
             workspec.create_uuid()
             workspec.verify_creation_data()
             work.append(workspec)
-        
+
         stats = {
         "todo" : stats_todo,
         "done" : stats_done
         }
         return (work, stats)
-    
+
 
     def get_all_playlist_work(self, selectors):
         work = []
@@ -194,22 +194,22 @@ class SloeWorkManager(object):
         logging.debug("get_all_playlist_work in %s" % root_album.name)
         for album in SloeTreeUtil.walk_albums():
             # logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
-        
+
             for playlist in album.playlists:
                 if SloeTreeUtil.object_matches_selector(playlist, selectors):
 
                     (work_for_item, stats_for_item) = self.get_work_for_playlist(album, playlist)
                     work += work_for_item
-                    
-                    for k in stats.keys():
-                        stats[k] += stats_for_item[k]                        
 
-                    
-                        
+                    for k in stats.keys():
+                        stats[k] += stats_for_item[k]
+
+
+
         sorted_work = reversed(sorted(work, key=lambda x: x.get("priority", 0.0)))
         logging.debug("get_all_playlist_work done")
-        
-        return (sorted_work, stats)        
+
+        return (sorted_work, stats)
 
 
     def get_all_update_work(self, selectors):
@@ -219,7 +219,7 @@ class SloeWorkManager(object):
         logging.debug("get_all_update_work in %s" % root_album.name)
         for album in SloeTreeUtil.walk_albums():
             # logging.debug("%s In album: %s '%s' (%s)" % (album.uuid, album.name, album.title, album._location.replace("\\", "/")))
-        
+
             for remoteitem in album.remoteitems:
                 if SloeTreeUtil.object_matches_selector(remoteitem, selectors):
                     remoteitem_uuids.append(remoteitem.uuid)
@@ -236,11 +236,11 @@ class SloeWorkManager(object):
         workspec.create_uuid()
         workspec.verify_creation_data()
         work = [workspec]
-        
+
         stats = {
             "todo" : len(remoteitem_uuids),
             "done" : 0
         }
-        
-        logging.debug("get_all_playlist_work done")        
+
+        logging.debug("get_all_playlist_work done")
         return (work, stats)

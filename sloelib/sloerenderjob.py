@@ -7,6 +7,8 @@ from sloetreenode import SloeTreeNode
 
 class SloeRenderJob(SloeTreeNode):
     MANDATORY_ELEMENTS = {
+        "common_id": "IDs of related items in common ID format",
+        "leafname": "Leafname (filename) of the item",
         "name": "Primary name of the item",
         "priority": "Priority of the item"
     }

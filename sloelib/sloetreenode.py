@@ -167,6 +167,8 @@ class SloeTreeNode(object):
 
 
     def verify_confirm_unknown(self, element):
+        if element.startswith("_"):
+            return False
         return True
 
 

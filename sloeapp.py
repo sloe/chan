@@ -51,7 +51,7 @@ class SloeApp:
         logging.basicConfig(format="#%(levelname)s:%(filename)s::%(funcName)s#%(lineno)d at %(asctime)s\n%(message)s")
         glb_cfg = sloelib.SloeConfig.inst()
         config_spec = None
-        if len(self.params) > 0 and self.params[0].lower().startswith("test"):
+        if len(self.params) > 0 and not self.params[0].lower().startswith("test"):
             config_spec = sloelib.SloeConfigSpec.new_from_ini_file("config.cfg", "Loading initial config")
         else:
             logging.getLogger().setLevel(logging.INFO)
