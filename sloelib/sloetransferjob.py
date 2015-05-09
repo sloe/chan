@@ -7,7 +7,10 @@ from sloetreenode import SloeTreeNode
 
 class SloeTransferJob(SloeTreeNode):
     MANDATORY_ELEMENTS = {
+        "common_id": "IDs of related items in common ID format",
+        "leafname": "Leafname (filename) of the item",
         "name": "Primary name of the item",
+        "payload_type": "Type of object being transferred (item, playlist, etc.)",
         "priority": "Priority of the item",
         "transfer_type": "Type of transfer used for items"
     }

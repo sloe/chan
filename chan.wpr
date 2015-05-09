@@ -29,6 +29,6 @@ proj.file-list = [loc('sloeapp.py'),
                   loc('sloelib/sloerenderjob.py')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('sloeapp.py'): ('project',
-        (u'dowork **/springh2h2015/div4',
+        (u'lstrans **/springh2h2015',
          ''))}
 proj.main-file = loc('sloeapp.py')
