@@ -237,7 +237,7 @@ class SloeTreeNode(object):
                 parser.set(section, name, '"%s"' % content)
 
         with open(self.get_ini_filepath(), "wb") as fp:
-            fp.write("# Saved from ojbect at %s\n\n" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'))
+            fp.write("# Saved from object at %s\n\n" % datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'))
             parser.write(fp)
 
 
