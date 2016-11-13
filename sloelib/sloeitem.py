@@ -85,6 +85,10 @@ class SloeItem(SloeTreeNode):
         return os.path.join(treepath, self.get_ini_leafname());
 
 
+    def get_file_url_subpath(self):
+        return "{0}/{1}".format(self._d["_subtree"], self._d["leafname"])
+
+
     def dump(self):
         return pformat(self._d)
 
