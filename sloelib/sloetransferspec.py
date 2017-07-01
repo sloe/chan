@@ -22,6 +22,16 @@ class SloeTransferSpec(SloeTreeNode):
     def __init__(self):
         SloeTreeNode.__init__(self, "transferspec", "06")
 
+
+    def create_new(self):
+        if "uuid" not in self._d:
+            self.create_uuid()
+
+
+    def get_ini_leafname(self):
+        return "+%s" % SloeTreeNode.get_ini_leafname(self)
+
+
     @classmethod
     def new_from_ini_file(cls, ini_filepath, error_info):
         obj = SloeTransferSpec()
