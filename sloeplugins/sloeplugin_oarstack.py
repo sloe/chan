@@ -11,7 +11,7 @@ import sloelib
 
 class SloePluginOarstack(sloelib.SloeBasePlugIn):
 
-    CURRENT_YEAR = 2013
+    CURRENT_YEAR = 2012
     CAPTURE_DEVICE = "Sony Alpha A9 camera" # e.g. "Sony Alpha A9 camera"
     CAPTURE_INFO = "1080p/120fps" # e.g. "1080p/120fps"
     LOCATION = "Cambridge, UK" # e.g. "Cambridge, UK"
@@ -29,7 +29,7 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
         if not os.path.exists(os.path.dirname(primary_path)):
             raise sloelib.SloeError("Primary path '%s' missing" % os.path.dirname(primary_path))
         if not os.path.exists(os.path.dirname(final_path)):
-            raise sloelib.SloeError("Final path '%s' missing" % os.path.dirname(final_path))
+           os.mkdir(os.path.dirname(final_path))
 
         if os.path.exists(primary_path):
             if glob.glob(os.path.join(primary_path, '*ALBUM*ini')):
@@ -105,7 +105,7 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
 
 
         if not glob.glob(os.path.join(final_path, '*ALBUM*ini')):
-            raise sloelib.SloeError("FInal album missing from %s" % final_path)
+            raise sloelib.SloeError("Final album missing from %s" % final_path)
 
 
         def make_playlist(subname, title, selector, short_speed, long_speed, tags):
@@ -131,6 +131,10 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
                 # 120fps era
                 make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (self.CURRENT_YEAR, div_code), "youtube,I=120p,S=1", "normal speed", "", "")
                 make_playlist("yt8", "Cambridge May Bumps %d division %s slow motion" % (self.CURRENT_YEAR, div_code), "youtube,I=120p,S=8", "slow motion", "slow motion ", ",Slow Motion")
+            elif self.CURRENT_YEAR == 2012:
+                # 720p/50fps
+                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (self.CURRENT_YEAR, div_code), "youtube720,I=50p,S=1", "normal speed", "", "")
+                make_playlist("ytq", "Cambridge May Bumps %d division %s slow motion" % (self.CURRENT_YEAR, div_code), "youtube720,I=50p,S=4", "slow motion", "slow motion ", ",Slow Motion")
             else:
                 # 60fps era
                 make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (self.CURRENT_YEAR, div_code), "youtube,I=60p,S=1", "normal speed", "", "")
