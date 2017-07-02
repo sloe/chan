@@ -26,6 +26,15 @@ class SloeOutputSpec(SloeTreeNode):
         SloeTreeNode.__init__(self, "outputspec", "04")
 
 
+    def create_new(self):
+        if "uuid" not in self._d:
+            self.create_uuid()
+
+
+    def get_ini_leafname(self):
+        return "+%s" % SloeTreeNode.get_ini_leafname(self)
+
+
     @classmethod
     def new_from_ini_file(cls, ini_filepath, error_info):
         outputspec = SloeOutputSpec()

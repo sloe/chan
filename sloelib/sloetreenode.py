@@ -231,7 +231,9 @@ class SloeTreeNode(object):
             else:
                 user.append(name)
 
-        for name in automatic + mandatory + user:
+        leading_keys = ['name', 'type', 'uuid']
+        trailing_keys = [x for x in sorted(automatic + mandatory + user) if not x in leading_keys]
+        for name in leading_keys + trailing_keys:
             if self._d[name] is not None:
                 content = str(self._d[name]).replace("\n", "\\n")
                 parser.set(section, name, '"%s"' % content)

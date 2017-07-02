@@ -11,57 +11,154 @@ import sloelib
 
 class SloePluginOarstack(sloelib.SloeBasePlugIn):
 
-    CURRENT_YEAR = 2012
-    CAPTURE_DEVICE = "Sony Alpha A9 camera" # e.g. "Sony Alpha A9 camera"
-    CAPTURE_INFO = "1080p/120fps" # e.g. "1080p/120fps"
-    LOCATION = "Cambridge, UK" # e.g. "Cambridge, UK"
-    EVENT_TITLE = "May Bumps 2017" # e.g. "May Bumps 2017"
-    TAGS = "Rowing (Sport),Cambridge,May Bumps 2017" # e.g. "Rowing (Sport),Cambridge,May Bumps 2017"
-    TITLE = "May Bumps 2017" # e.g. "May Bumps 2017"
+    EVENT_DATA = dict(
+        mays2018=dict(
+            year=2018,
+            capture_device="Sony Alpha A9 camera",
+            capture_info="1080p/120fps",
+            genspec_name_ytf="youtube,I=120p,S=1",
+            genspec_name_ytnf="youtube,I=120p,S=8",
+            location="Cambridge, UK",
+            event_title="May Bumps 2018",
+            tags="Rowing (Sport),Cambridge,May Bumps 2018",
+            title="May Bumps 2018",
+            wed=dict(
+                title="Wednesday",
+                subevent_title="Wednesday",
+                event_time="Wednesday 13th June 2018"
+            ),
+            thurs=dict(
+                title="Thursday",
+                subevent_title="Thursday",
+                event_time="Thursday 14th June 2018"
+            )
+        )
+    )
 
     def command_makemays(self, params, options):
         pprint(params)
         event_dir, day_dir, div_dir = params
+        event_data = self.EVENT_DATA[event_dir]
+        current_year = event_data['year']
         div_code = "%s%s" % (div_dir[3].upper(), div_dir[4])
         root_dir = sloelib.SloeConfig.inst().get_global("treeroot")
-        primary_path = os.path.join(root_dir, 'primary', 'precious', event_dir, day_dir, div_dir)
-        final_path = os.path.join(root_dir, 'final', 'derived', event_dir, day_dir, div_dir)
-        if not os.path.exists(os.path.dirname(primary_path)):
-            raise sloelib.SloeError("Primary path '%s' missing" % os.path.dirname(primary_path))
-        if not os.path.exists(os.path.dirname(final_path)):
-           os.mkdir(os.path.dirname(final_path))
-
-        if os.path.exists(primary_path):
-            if glob.glob(os.path.join(primary_path, '*ALBUM*ini')):
-                pass #raise sloelib.SloeError("Album %s already exists" % primary_path)
-        else:
-            os.mkdir(primary_path)
-
-        if os.path.exists(final_path):
-            if glob.glob(os.path.join(final_path, '*ALBUM*ini')):
-                pass # raise sloelib.SloeError("Album %s already exists" % final_path)
-        else:
-            os.mkdir(final_path)
-
+        primary_div_path = os.path.join(root_dir, 'primary', 'derived', event_dir, day_dir, div_dir)
         primary_event_path = os.path.join(root_dir, 'primary', 'derived', event_dir)
         primary_day_path = os.path.join(root_dir, 'primary', 'derived', event_dir, day_dir)
+        final_div_path = os.path.join(root_dir, 'final', 'derived', event_dir, day_dir, div_dir)
         final_event_path = os.path.join(root_dir, 'final', 'derived', event_dir)
         final_day_path = os.path.join(root_dir, 'final', 'derived', event_dir, day_dir)
 
-        if not glob.glob(os.path.join(primary_event_path, '*ALBUM*ini')):
-            primary_album = sloelib.SloeAlbum()
-            primary_album.create_new(div_dir, primary_event_path)
-            primary_album.set_values(
-                name=event_dir,
-                capture_device=CAPTURE_DEVICE,
-                capture_info=CAPTURE_INFO,
-                location=LOCATION,
-                event_title=EVENT_TITLE,
-                tags=TAGS,
-                title=TITLE
-            )
-            primary_album.save_to_file()
+        if not os.path.exists(primary_div_path):
+            os.makedirs(primary_div_path)
+        if not os.path.exists(final_div_path):
+            os.makedirs(final_div_path)
 
+        # Primary albums
+
+        if not glob.glob(os.path.join(primary_event_path, '*ALBUM*ini')):
+            # Create the primary top level event album
+            primary_event_album = sloelib.SloeAlbum()
+            primary_event_album.create_new(div_dir, primary_event_path)
+            primary_event_album.set_values(
+                name=event_dir,
+                capture_device=event_data['capture_device'],
+                capture_info=event_data['capture_info'],
+                location=event_data['location'],
+                event_title=event_data['event_title'],
+                tags=event_data['tags'],
+                title=event_data['title']
+            )
+            primary_event_album.save_to_file()
+
+
+        if not glob.glob(os.path.join(primary_day_path, '*ALBUM*ini')):
+            # Create the primary day level event album
+            primary_day_album = sloelib.SloeAlbum()
+            primary_day_album.create_new(day_dir, primary_day_path)
+            primary_day_album.set_values(
+                name=day_dir,
+                event_time=event_data[day_dir]['event_time'],
+                subevent_title=event_data[day_dir]['subevent_title'],
+                title=event_data[day_dir]['title']
+            )
+            primary_day_album.save_to_file()
+
+
+        if not glob.glob(os.path.join(primary_div_path, '*ALBUM*ini')):
+            # Create the primary division level event album
+            primary_div_album = sloelib.SloeAlbum()
+            primary_div_album.create_new(div_dir, primary_div_path)
+            primary_div_album.set_values(
+                title="division %s" % div_code,
+                subevent_title="division %s" % div_code
+            )
+            primary_div_album.save_to_file()
+
+        # Final albums
+
+        if not glob.glob(os.path.join(final_event_path, '*ALBUM*ini')):
+            # Create the final top level event album
+            final_event_album = sloelib.SloeAlbum()
+            final_event_album.create_new(event_dir, final_event_path)
+            final_event_album.set_values(
+                source_album_uuid=primary_event_album.uuid,
+                title=event_data['title']
+            )
+            final_event_album.save_to_file()
+
+
+        if not glob.glob(os.path.join(final_day_path, '*ALBUM*ini')):
+            # Create the final day album
+            final_day_album = sloelib.SloeAlbum()
+            final_day_album.create_new(day_dir, final_day_path)
+            final_day_album.set_values(
+                title=event_data[day_dir]['title'],
+                source_album_uuid = primary_day_album.uuid
+            )
+            final_day_album.save_to_file()
+
+
+        if not glob.glob(os.path.join(final_div_path, '*ALBUM*ini')):
+            # Create the final division album
+            final_div_album = sloelib.SloeAlbum()
+            final_div_album.create_new(div_dir, final_div_path)
+            final_div_album.set_values(
+                name=div_dir,
+                title="division %s" % div_code,
+                source_album_uuid = primary_div_album.uuid
+            )
+            final_div_album.save_to_file()
+
+        # Primary OutputSpecs
+
+        if not glob.glob(os.path.join(primary_event_path, '*OUTPUTSPEC*ini')):
+            # Create the event level output specs
+            event_outputspec_ytf = sloelib.SloeOutputSpec()
+            event_outputspec_ytf.create_new()
+            event_outputspec_ytf.set_values(
+                name="%s-ytf" % event_dir,
+                genspec_name=event_data['genspec_name_ytf'],
+                glob_include="*",
+                output_path="final/derived/{subtree}/{basename}{suffix}{ext}",
+                priority=1000
+            )
+            event_outputspec_ytf.add_filepath_info(os.path.join(primary_event_path, 'dummy'))
+            event_outputspec_ytf.save_to_file()
+
+            event_outputspec_ytnf = sloelib.SloeOutputSpec()
+            event_outputspec_ytnf.create_new()
+            event_outputspec_ytnf.set_values(
+                name="%s-yt8" % event_dir,
+                genspec_name=event_data['genspec_name_ytnf'],
+                glob_include="*",
+                output_path="final/derived/{subtree}/{basename}{suffix}{ext}",
+                priority=500
+            )
+            event_outputspec_ytnf.add_filepath_info(os.path.join(primary_event_path, 'dummy'))
+            event_outputspec_ytnf.save_to_file()
+
+        # Final TransferSpecs
 
         if not glob.glob(os.path.join(final_event_path, '*TRANSFERSPEC*ini')):
             div_transferspec = sloelib.SloeTransferSpec()
@@ -83,34 +180,13 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
             div_transferspec.save_to_file()
 
 
-        if not glob.glob(os.path.join(primary_path, '*ALBUM*ini')):
-            if glob.glob(os.path.join(final_path, '*ALBUM*ini')):
-                raise sloelib.SloeError("Final album present with no primary (%s, %s)" % (primary_path, final_path))
-
-            primary_album = sloelib.SloeAlbum()
-            primary_album.create_new(div_dir, primary_path)
-            primary_album.set_values(
-                title="division %s" % div_code,
-                subevent_title="division %s" % div_code
-            )
-            primary_album.save_to_file()
-
-            final_album = sloelib.SloeAlbum()
-            final_album.create_new(div_dir, final_path)
-            final_album.set_values(
-                title="division %s" % div_code,
-                source_album_uuid = primary_album.uuid
-            )
-            final_album.save_to_file()
-
-
-        if not glob.glob(os.path.join(final_path, '*ALBUM*ini')):
-            raise sloelib.SloeError("Final album missing from %s" % final_path)
+        if not glob.glob(os.path.join(final_div_path, '*ALBUM*ini')):
+            raise sloelib.SloeError("Final album missing from %s" % final_div_path)
 
 
         def make_playlist(subname, title, selector, short_speed, long_speed, tags):
             playlist = sloelib.SloePlaylist()
-            playlist.create_new("+%s-%s" % (div_dir, subname), title, "1000", final_path)
+            playlist.create_new("+%s-%s" % (div_dir, subname), title, "1000", final_div_path)
             playlist.set_values(
                 title=title,
                 transfer_type="youtube",
@@ -125,20 +201,22 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
             playlist.save_to_file()
 
 
-        if not glob.glob(os.path.join(final_path, '*PLAYLIST*ini')):
-            make_playlist("all", "Cambridge May Bumps %d division %s" % (self.CURRENT_YEAR, div_code), None, "normal and slow motion", "alternating normal speed and slow motion ", ",Slow Motion")
-            if self.CURRENT_YEAR > 2016:
+        if not glob.glob(os.path.join(final_div_path, '*PLAYLIST*ini')):
+            make_playlist("all", "Cambridge May Bumps %d division %s" % (current_year, div_code), None, "normal and slow motion", "alternating normal speed and slow motion ", ",Slow Motion")
+            if current_year > 2016:
                 # 120fps era
-                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (self.CURRENT_YEAR, div_code), "youtube,I=120p,S=1", "normal speed", "", "")
-                make_playlist("yt8", "Cambridge May Bumps %d division %s slow motion" % (self.CURRENT_YEAR, div_code), "youtube,I=120p,S=8", "slow motion", "slow motion ", ",Slow Motion")
-            elif self.CURRENT_YEAR == 2012:
+                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (current_year, div_code), "youtube,I=120p,S=1", "normal speed", "", "")
+                make_playlist("yt8", "Cambridge May Bumps %d division %s slow motion" % (current_year, div_code), "youtube,I=120p,S=8", "slow motion", "slow motion ", ",Slow Motion")
+            elif current_year == 2012:
                 # 720p/50fps
-                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (self.CURRENT_YEAR, div_code), "youtube720,I=50p,S=1", "normal speed", "", "")
-                make_playlist("ytq", "Cambridge May Bumps %d division %s slow motion" % (self.CURRENT_YEAR, div_code), "youtube720,I=50p,S=4", "slow motion", "slow motion ", ",Slow Motion")
+                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (current_year, div_code), "youtube720,I=50p,S=1", "normal speed", "", "")
+                make_playlist("ytq", "Cambridge May Bumps %d division %s slow motion" % (current_year, div_code), "youtube720,I=50p,S=4", "slow motion", "slow motion ", ",Slow Motion")
             else:
                 # 60fps era
-                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (self.CURRENT_YEAR, div_code), "youtube,I=60p,S=1", "normal speed", "", "")
-                make_playlist("ytq", "Cambridge May Bumps %d division %s slow motion" % (self.CURRENT_YEAR, div_code), "youtube,I=60p,S=4", "slow motion", "slow motion ", ",Slow Motion")
+                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (current_year, div_code), "youtube,I=60p,S=1", "normal speed", "", "")
+                make_playlist("ytq", "Cambridge May Bumps %d division %s slow motion" % (current_year, div_code), "youtube,I=60p,S=4", "slow motion", "slow motion ", ",Slow Motion")
+
+        pass
 
 
     def command_makeevent(self, params, options):
