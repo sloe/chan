@@ -12,12 +12,43 @@ import sloelib
 class SloePluginOarstack(sloelib.SloeBasePlugIn):
 
     EVENT_DATA = dict(
+        mays2011=dict(
+            year=2011,
+            capture_device="Canon XF100 camera",
+            capture_info="720p/50fps",
+            genspec_name_ytf="youtube720,I=50p,S=1",
+            genspec_name_ytnf="youtube720,I=50p,S=4",
+            location="Cambridge, UK",
+            event_title="May Bumps 2011",
+            tags="Rowing (Sport),Cambridge,May Bumps 2011",
+            title="May Bumps 2011",
+            wed=dict(
+                title="Wednesday",
+                subevent_title="Wednesday",
+                event_time="Wednesday 15th June 2011"
+            ),
+            thurs=dict(
+                title="Thursday",
+                subevent_title="Thursday",
+                event_time="Thursday 16th June 2011"
+            ),
+            fri=dict(
+                title="Friday",
+                subevent_title="Friday",
+                event_time="Friday 17th June 2011"
+            ),
+            sat=dict(
+                title="Saturday",
+                subevent_title="Saturday",
+                event_time="Saturday 18th June 2011"
+            )
+        ),
         mays2018=dict(
             year=2018,
-            capture_device="Sony Alpha A9 camera",
-            capture_info="1080p/120fps",
-            genspec_name_ytf="youtube,I=120p,S=1",
-            genspec_name_ytnf="youtube,I=120p,S=8",
+            capture_device="Panasonic GH5S camera",
+            capture_info="1080p/240fps",
+            genspec_name_ytf="youtube,I=240p,S=1",
+            genspec_name_ytnf="youtube,I=240p,S=16",
             location="Cambridge, UK",
             event_title="May Bumps 2018",
             tags="Rowing (Sport),Cambridge,May Bumps 2018",
@@ -149,7 +180,7 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
             event_outputspec_ytnf = sloelib.SloeOutputSpec()
             event_outputspec_ytnf.create_new()
             event_outputspec_ytnf.set_values(
-                name="%s-yt8" % event_dir,
+                name="%s-yt16" % event_dir,
                 genspec_name=event_data['genspec_name_ytnf'],
                 glob_include="*",
                 output_path="final/derived/{subtree}/{basename}{suffix}{ext}",
@@ -203,7 +234,11 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
 
         if not glob.glob(os.path.join(final_div_path, '*PLAYLIST*ini')):
             make_playlist("all", "Cambridge May Bumps %d division %s" % (current_year, div_code), None, "normal and slow motion", "alternating normal speed and slow motion ", ",Slow Motion")
-            if current_year > 2016:
+            if current_year > 2017:
+                # 240fps era
+                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (current_year, div_code), "youtube,I=240p,S=1", "normal speed", "", "")
+                make_playlist("yt16", "Cambridge May Bumps %d division %s slow motion" % (current_year, div_code), "youtube,I=240p,S=16", "slow motion", "slow motion ", ",Slow Motion")
+            elif current_year > 2016:
                 # 120fps era
                 make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (current_year, div_code), "youtube,I=120p,S=1", "normal speed", "", "")
                 make_playlist("yt8", "Cambridge May Bumps %d division %s slow motion" % (current_year, div_code), "youtube,I=120p,S=8", "slow motion", "slow motion ", ",Slow Motion")

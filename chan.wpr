@@ -1,5 +1,5 @@
 #!wing
-#!version=5.0
+#!version=6.0
 ##################################################################
 # Wing IDE project file                                          #
 ##################################################################
@@ -29,6 +29,6 @@ proj.file-list = [loc('sloeapp.py'),
                   loc('sloelib/sloerenderjob.py')]
 proj.file-type = 'shared'
 proj.launch-config = {loc('sloeapp.py'): ('project',
-        (u'makemays mays2018 wed divm7',
+        (u'makemays mays2011 sat divm1',
          ''))}
 proj.main-file = loc('sloeapp.py')
