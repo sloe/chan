@@ -84,6 +84,63 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
                 subevent_title="Thursday",
                 event_time="Thursday 13th June 2019"
             )
+        ),
+        townbumps2019=dict(
+            year=2019,
+            capture_device="Sony a6400 camera",
+            capture_info="1080p/120fps",
+            genspec_name_ytf="youtube,I=120p,S=1",
+            genspec_name_ytnf="youtube,I=120p,S=8",
+            location="Cambridge, UK",
+            event_title="Town Bumps 2019",
+            tags="Rowing (Sport),Cambridge,Town Bumps 2019",
+            title="Town Bumps 2019",
+            wed=dict(
+                title="Wednesday",
+                subevent_title="Wednesday",
+                event_time="Wednesday 12th June 2019"
+            ),
+            thurs=dict(
+                title="Thursday",
+                subevent_title="Thursday",
+                event_time="Thursday 13th June 2019"
+            )
+        ),
+        townbumps2021=dict(
+            year=2021,
+            capture_device="Sony a7R III camera",
+            capture_info="1080p/120fps",
+            genspec_name_ytf="youtube,I=120p,S=1",
+            genspec_name_ytnf="youtube,I=120p,S=8",
+            location="Cambridge, UK",
+            event_title="Town Bumps 2021",
+            tags="Rowing (Sport),Cambridge,Town Bumps 2021",
+            title="Town Bumps 2021",
+            mon=dict(
+                title="Monday",
+                subevent_title="Monday",
+                event_time="Monday 19th July 2021"
+            ),
+            tues=dict(
+                title="Tuesday",
+                subevent_title="Tuesday",
+                event_time="Tuesday 20th July 2021"
+            ),
+            wed=dict(
+                title="Wednesday",
+                subevent_title="Wednesday",
+                event_time="Wednesday 21st July 2021"
+            ),
+            thurs=dict(
+                title="Thursday",
+                subevent_title="Thursday",
+                event_time="Thursday 22nd July 2021"
+            ),
+            fri=dict(
+                title="Friday",
+                subevent_title="Friday",
+                event_time="Friday 23rd July 2021"
+            )
         )
     )
 
@@ -255,14 +312,14 @@ class SloePluginOarstack(sloelib.SloeBasePlugIn):
 
         if not glob.glob(os.path.join(final_div_path, '*PLAYLIST*ini')):
             make_playlist("all", "Cambridge May Bumps %d division %s" % (current_year, div_code), None, "normal and slow motion", "alternating normal speed and slow motion ", ",Slow Motion")
-            if current_year > 2019:
+            if current_year == 2020:
                 # 240fps era
                 make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (current_year, div_code), "youtube,I=240p,S=1", "normal speed", "", "")
                 make_playlist("yt16", "Cambridge May Bumps %d division %s slow motion" % (current_year, div_code), "youtube,I=240p,S=16", "slow motion", "slow motion ", ",Slow Motion")
-            elif current_year in (2017, 2019):
+            elif current_year in (2017, 2019, 2021):
                 # 120fps era
-                make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (current_year, div_code), "youtube,I=120p,S=1", "normal speed", "", "")
-                make_playlist("yt8", "Cambridge May Bumps %d division %s slow motion" % (current_year, div_code), "youtube,I=120p,S=8", "slow motion", "slow motion ", ",Slow Motion")
+                make_playlist("ytf", "Cambridge Town Bumps %d division %s normal speed" % (current_year, div_code), "youtube,I=120p,S=1", "normal speed", "", "")
+                make_playlist("yt8", "Cambridge Town Bumps %d division %s slow motion" % (current_year, div_code), "youtube,I=120p,S=8", "slow motion", "slow motion ", ",Slow Motion")
             elif current_year == 2012:
                 # 720p/50fps
                 make_playlist("ytf", "Cambridge May Bumps %d division %s normal speed" % (current_year, div_code), "youtube720,I=50p,S=1", "normal speed", "", "")

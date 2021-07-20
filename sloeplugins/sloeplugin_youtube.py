@@ -7,6 +7,7 @@ from pprint import pprint, pformat
 import sloelib
 from .sloeyoutube.sloeyoutubeplaylist import SloeYouTubePlaylist
 from .sloeyoutube.sloeyoutubesession import SloeYouTubeSession
+from .sloeyoutube.sloeyoutubetree import SloeYouTubeTree
 from .sloeyoutube.sloeyoutubeupload import SloeYouTubeUpload
 
 class SloePluginYoutube(sloelib.SloeBasePlugIn):
